@@ -41,6 +41,7 @@
 
 #include <utility>
 #include <functional>
+#include <string>
 
 
 namespace QuantLib {
@@ -122,7 +123,7 @@ namespace QuantLib {
     class Date {
       public:
         //! serial number type
-        typedef int_fast32_t serial_type;
+        typedef boost::int_fast32_t serial_type;
         //! \name constructors
         //@{
         //! Default constructor returning a null date.
@@ -234,7 +235,7 @@ namespace QuantLib {
         static Date universalDateTime();
 
         //! underlying resolution of the  posix date time object
-        static Size ticksPerSecond();
+        static boost::posix_time::time_duration::tick_type ticksPerSecond();
 #endif
 
         //@}

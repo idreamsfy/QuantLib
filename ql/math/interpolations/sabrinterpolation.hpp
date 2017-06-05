@@ -3,7 +3,7 @@
 /*
  Copyright (C) 2006 Ferdinando Ametrano
  Copyright (C) 2007 Marco Bianchetti
- Copyright (C) 2007 François du Vignaud
+ Copyright (C) 2007 FranÃ§ois du Vignaud
  Copyright (C) 2007 Giorgio Facchinetti
  Copyright (C) 2006 Mario Pucci
  Copyright (C) 2006 StatPro Italia srl
@@ -66,7 +66,7 @@ class SABRWrapper {
 struct SABRSpecs {
     Size dimension() { return 4; }
     void defaultValues(std::vector<Real> &params, std::vector<bool> &,
-                       const Real &forward, const Real expiryTIme,
+                       const Real &forward, const Real expiryTime,
                        const std::vector<Real> &addParams) {
         if (params[1] == Null<Real>())
             params[1] = 0.5;

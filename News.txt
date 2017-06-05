@@ -1,130 +1,128 @@
 
-Changes for QuantLib 1.8:
-=========================
+Changes for QuantLib 1.10:
+==========================
 
-QuantLib 1.8 includes 45 pull requests from several contributors.
+QuantLib 1.10 includes 58 pull requests and fixed issues from several
+contributors.
 
 The most notable changes are included below.
-A detailed list of changes is available in ChangeLog.txt.
+A detailed list of changes is available in ChangeLog.txt and at
+<https://github.com/lballabio/QuantLib/milestone/5?closed=1>.
+
 
 PORTABILITY
 
-- The minimum required Boost version is now Boost 1.43 (May
-  2010). However, it is strongly suggested to use a recent version, or
-  at least Boost 1.48 (November 2011).
+- Added support for the recently released Visual Studio 2017.
 
-- Added initial CMake support (thanks to Dmitri Nesteruk). This makes
-  it possible to compile QuantLib on CLion and other CMake-based
-  tools.
+- Unified Visual Studio solution file.  The provided QuantLib.sln file
+  works for all versions from 2010 to 2017.
 
-- The build now generates and installs pkg-config file on Linux
-  systems (thanks to GitHub user njwhite).
+- Added support for the recently released Boost 1.64.0 (thanks to
+  Klaus Spanderen).
 
-INTEREST RATES
+- Converted non-ASCII characters in source files to UTF-8; this should
+  make them work with most editors (thanks to Krzysztof Woś and Jose
+  Aparicio).
 
-- Fixed links to documentation for LIBOR indexes (thanks to Jose
-  Magana).
+- Fixed some compilation issues with older versions of the Sun CC
+  compiler and with the gcc 3.4 series.  The offending code has simply
+  been disabled; when using those compilers, is also suggested to
+  downgrade Boost to an older version since more recent ones can give
+  problems.  Boost 1.54.0 was reported to work.  It is likely that no
+  further support will be given to these compilers in future releases.
 
-VOLATILITY
+INSTRUMENTS AND PRICING ENGINES
 
-- Added the possibility to price swaptions and to calculate their
-  implied volatilities in a Black-like model with normal volatilities
-  as well as shifted lognormal (thanks to Peter Caspers).
+- Added Heston pricing engine based on Fourier-Cosine series
+  expansion (thanks to Klaus Spanderen).
 
-- Added the possibility to price caps in a Black-like model with
-  normal volatilities as well as shifted lognormal (thanks to Michael
-  von den Driesch).
+- Added cash annuity model in Black swaption engine (thanks to Peter
+  Caspers, Werner Kuerzinger and Paul Giltinan).
 
-- Caplet strike is correctly recomputed during stripping (thanks to
-  Michael von den Driesch).
-
-INSTRUMENTS
-
-- Added basic CVA IRS pricing engine (stand alone, no portfolio; no
-  WWR, no collateral). Thanks to Jose Aparicio.
+- Add an optional exogenous discount curve to analytic Black European
+  option engine (thanks to Paul Giltinan).
 
 MODELS
 
-- Black-Scholes processes now return the closed-formula expectation,
-  standard deviation and variance over long periods (thanks to Peter
-  Caspers).
+- Added collocating local-volatility model (thanks to Klaus Spanderen).
 
-CURRENCIES
+- Optionally disable Feller constraint in Cox-Ingersoll-Ross model
+  (thanks to Oleksandr Khomenko).
 
-- Added Ukrainian hryvnia (thanks to GitHub user maksym-studenets).
+INTEREST RATES
 
-MONTE CARLO
+- Allow using an arbitrary solver to calculate yield (thanks to Daniel
+  Hrabovcak).
 
-- Use different random-number generators for calibration and pricing
-  in Longstaff-Schwartz engine (thanks to Peter Caspers).
+- Update handling of July 4th for US LIBOR fixings (thanks to Oleg
+  Kulkov for the heads-up).
+
+- Added CompoundingThenSimple convention (thanks to Martin Ross).
+
+INFLATION
+
+- Use the lagged reference period to interpolate inflation fixings
+  (thanks to Francois Botha).
+
+VOLATILITY
+
+- Reduce the memory footprint of OptionletStripper1 (thanks to
+  Matthias Lungwitz)
 
 DATE/TIME
 
-- Added forecast dates for moving holidays to Saudi Arabia calendar up
-  to 2022 (thanks to Jayanth R. Varma).
+- Updated Chinese calendar for 2017 (thanks to Cheng Li).
 
-- Added new Ukrainian holiday, Defender's Day (thanks to GitHub user
-  maksym-studenets).
+- Added CDS2015 date-generation rule with the correct semiannual
+  frequency (thanks to Guillaume Horel).
 
-- Added a few more holidays for South Korea (thanks to Faycal El Karaa).
+- The Iceland calendar used to incorrectly adjust New Year's Day to
+  the next Monday when falling on a holiday. That's now fixed (thanks
+  to Stefan Gunnsteinsson for the heads-up).
+
+- Fixed bug that prevented correct calculation of an ECB date on the
+  first day of a month (thanks to Nicholas Bertocchi).
+
+- Fixed bug in Schedule that ignored end-of-month convention when
+  calculating reference dates for irregular coupons (thanks to Ryan
+  Taylor).
+
+- Allow passing a schedule to Actual/Actual day counter for correct
+  calculation of reference dates (thanks to Ryan Taylor).
 
 MATH
 
-- Added mixed log interpolation (thanks to GitHub user sfondi).
+- Added harmonic spline interpolation (thanks to Nicholas Bertocchi).
 
-- Avoid mixing different types while bit-shifting in fast Fourier
-  transform on 64-bit systems (thanks to Nikolai Nowaczyk).
+EXAMPLES
+
+- Added examples for global optimizers (thanks to Andres Hernandez).
 
 DEPRECATED FEATURES
 
-- Removed DateParser::split method (deprecated in version 1.6).
+- Removed the SwaptionHelper constructors not taking an explicit
+  volatility type (deprecated in version 1.8).
 
-TEST SUITE
+- Removed the SwaptionVolatilityMatrix constructors not taking an
+  explicit volatility type (deprecated in version 1.8).
 
-- The test suite is now run with a fixed evaluation date instead of
-  using today's date. This helps avoid transient errors due to
-  holidays. It is still possible to use today's date (or any other
-  date) by running it as:
+- Removed the BlackSwaptionEngine constructor overriding the
+  displacement from the given volatility structure (deprecated in
+  version 1.8).
 
-    $ quantlib-test-suite -- --date=today
+- Removed the FlatSmileSection and InterpolatedSmileSection
+  constructors not taking an explicit volatility type (deprecated in
+  version 1.8).
 
-  or
+- Removed the RiskyAssetSwapOption constructor taking a side
+  (deprecated in version 1.8).
 
-    $ quantlib-test-suite -- --date=2016-02-08
+POSSIBLY BREAKING CHANGES
 
-  (Thanks to Peter Caspers.)
+- The constructors of a few Libor-like indexes were made
+  explicit. This means that code such as the following, which used to
+  compile, will now break.  That's probably a good thing.
 
-NEW OPT-IN FEATURES
+    Handle<YieldTermStructure> forecast_curve;
+    Euribor6M index = forecast_curve;
 
-These features are disabled by default and can be enabled by defining
-a macro or passing a flag to `./configure`.  Feedback is appreciated.
-
-- Added a parallel unit-test runner (thanks to Klaus Spanderen). This
-  was successfully used under Linux, but problems were reported on Mac
-  OS X and occasionally on Visual C++ 2010.  The feature requires
-  Boost 1.59 or later and can be enabled by uncommenting the
-  `QL_ENABLE_PARALLEL_UNIT_TEST_RUNNER` macro in `ql/userconfig.hpp`
-  on Visual C++ or by passing the `--enable-parallel-unit-test-runner`
-  to `./configure` on other systems.
-
-EXPERIMENTAL FOLDER
-
-The ql/experimental folder contains code which is still not fully
-integrated with the library or even fully tested, but is released in
-order to get user feedback. Experimental classes are considered
-unstable; their interfaces might change in future releases.
-
-Changes and new contributions for this release were:
-
-- Stochastic local-volatility Heston model, (thanks to Klaus Spanderen
-  and Johannes Goettker-Schnetmann). Both a Monte Carlo and a
-  finite-difference calibration and calculation are provided.
-
-- Laplace interpolation (thanks to Peter Caspers).
-
-- Global optimizers: Hybrid Simulated Annealing, Particle Swarm
-  Optimization, Firefly Algorithm, and Differential Evolution (thanks
-  to Andres Hernandez).
-
-- A SVD-based calculation of the Moore-Penrose inverse matrix (thanks
-  to Peter Caspers).

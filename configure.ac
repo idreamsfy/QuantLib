@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT([QuantLib], [1.9],
+AC_INIT([QuantLib], [1.11],
         [quantlib-dev@lists.sourceforge.net],
         [QuantLib])
 AC_PREREQ(2.62)
@@ -269,6 +269,24 @@ if test "$ql_use_tsop" = "yes" ; then
    AC_DEFINE([QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN],[1],
              [Define this if you want to enable 
               thread-safe observer pattern.])
+fi
+
+AC_MSG_CHECKING([whether to enable thread-safe singleton initialization])
+AC_ARG_ENABLE([thread-safe-singleton-init],
+              AC_HELP_STRING([--enable-thread-safe-singleton-init],
+                             [If enabled, singleton initialization will
+                              be thread-safe. This requires Boost 1.58
+                              or later and is not supported when sessions
+                              are enabled.]),
+              [ql_use_safe_singleton_init=$enableval],
+              [ql_use_safe_singleton_init=no])
+if test "$ql_use_safe_singleton_init" = "yes" ; then
+   AC_DEFINE([QL_ENABLE_SINGLETON_THREAD_SAFE_INIT],[1],
+             [Define this if you want thread-safe singleton initialization.])
+fi
+AC_MSG_RESULT([$ql_use_safe_singleton_init])
+
+if test "$ql_use_tsop" = "yes" || test "$ql_use_safe_singleton_init" = "yes"; then
    QL_CHECK_BOOST_VERSION_1_58_OR_HIGHER
    QL_CHECK_BOOST_TEST_THREAD_SIGNALS2_SYSTEM
 else
@@ -321,6 +339,20 @@ AC_ARG_ENABLE([benchmark],
 AM_CONDITIONAL(AUTO_BENCHMARK, test "$ql_install_benchmark" != "no")
 AC_MSG_RESULT([$ql_install_benchmark])
 
+AC_MSG_CHECKING([whether to use unity build])
+AC_ARG_ENABLE([unity-build],
+              AC_HELP_STRING([--enable-unity-build],
+                             [If enabled, the source files in each directory
+                              are collected into one single source file and
+                              compiled together. This can speed up the
+                              compilation of the library.
+                              If disabled (the default) each source file is
+                              compiled separately..]),
+              [ql_use_unity_build=$enableval],
+              [ql_use_unity_build=no])
+AM_CONDITIONAL(UNITY_BUILD, test "$ql_use_unity_build" != "no")
+AC_MSG_RESULT([$ql_use_unity_build])
+
 AC_MSG_CHECKING([whether to enable intraday date and daycounters])
 AC_ARG_ENABLE([intraday],
               AC_HELP_STRING([--enable-intraday],
@@ -340,7 +372,6 @@ if test "$ql_use_intraday" = "yes" ; then
              [Define this if you want to enable high resolution date class.])
 fi
 AC_MSG_RESULT([$ql_use_intraday])
-
 
 # manual configurations for specific hosts
 case $host in
@@ -364,6 +395,7 @@ AC_CONFIG_FILES([
     ql/currencies/Makefile
     ql/experimental/Makefile
     ql/experimental/amortizingbonds/Makefile
+    ql/experimental/averageois/Makefile
     ql/experimental/barrieroption/Makefile
     ql/experimental/callablebonds/Makefile
     ql/experimental/catbonds/Makefile
@@ -383,6 +415,7 @@ AC_CONFIG_FILES([
     ql/experimental/risk/Makefile
     ql/experimental/shortrate/Makefile
     ql/experimental/swaptions/Makefile
+    ql/experimental/termstructures/Makefile
     ql/experimental/variancegamma/Makefile
     ql/experimental/varianceoption/Makefile
     ql/experimental/volatility/Makefile
@@ -485,6 +518,7 @@ AC_CONFIG_FILES([
     Examples/FRA/Makefile
     Examples/LatentModel/Makefile
     Examples/Gaussian1dModels/Makefile
+    Examples/GlobalOptimizer/Makefile
     Examples/MarketModels/Makefile
     Examples/MultidimIntegral/Makefile
     Examples/Replication/Makefile
