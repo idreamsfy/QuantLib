@@ -24,7 +24,7 @@
 namespace QuantLib {
 
 FdmZabrUnderlyingPart::FdmZabrUnderlyingPart(
-    const boost::shared_ptr<FdmMesher> &mesher, const Real beta, const Real nu,
+    const ext::shared_ptr<FdmMesher> &mesher, const Real beta, const Real nu,
     const Real rho, const Real gamma)
     : volatilityValues_(mesher->locations(1)),
       forwardValues_(mesher->locations(0)),
@@ -40,7 +40,7 @@ const TripleBandLinearOp &FdmZabrUnderlyingPart::getMap() const {
 }
 
 FdmZabrVolatilityPart::FdmZabrVolatilityPart(
-    const boost::shared_ptr<FdmMesher> &mesher, const Real beta, const Real nu,
+    const ext::shared_ptr<FdmMesher> &mesher, const Real beta, const Real nu,
     const Real rho, const Real gamma)
     : volatilityValues_(mesher->locations(1)),
       forwardValues_(mesher->locations(0)),
@@ -54,7 +54,7 @@ const TripleBandLinearOp &FdmZabrVolatilityPart::getMap() const {
     return mapT_;
 }
 
-FdmZabrOp::FdmZabrOp(const boost::shared_ptr<FdmMesher> &mesher,
+FdmZabrOp::FdmZabrOp(const ext::shared_ptr<FdmMesher> &mesher,
                      const Real beta, const Real nu, const Real rho,
                      const Real gamma)
     : volatilityValues_(mesher->locations(1)),
@@ -107,7 +107,6 @@ Disposable<Array> FdmZabrOp::preconditioner(const Array &r, Real dt) const {
     return solve_splitting(0, r, dt);
 }
 
-#if !defined(QL_NO_UBLAS_SUPPORT)
 Disposable<std::vector<SparseMatrix> > FdmZabrOp::toMatrixDecomp() const {
     std::vector<SparseMatrix> retVal(3);
     retVal[0] = dxMap_.getMap().toMatrix();
@@ -115,5 +114,5 @@ Disposable<std::vector<SparseMatrix> > FdmZabrOp::toMatrixDecomp() const {
     retVal[2] = dxyMap_.toMatrix();
     return retVal;
 }
-#endif
+
 }

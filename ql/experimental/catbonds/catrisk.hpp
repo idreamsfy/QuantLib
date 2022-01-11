@@ -26,12 +26,19 @@
 
 #include <ql/time/date.hpp>
 #include <ql/errors.hpp>
-#include <boost/shared_ptr.hpp>
+#include <ql/shared_ptr.hpp>
 #if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4))
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #endif
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-overlap-compare"
+#endif
 #include <boost/random.hpp>
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 #if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4))
 #pragma GCC diagnostic pop
 #endif
@@ -46,7 +53,7 @@ namespace QuantLib {
         : start_(start), end_(end) 
         {}
 
-        virtual ~CatSimulation(){}
+        virtual ~CatSimulation() = default;
         virtual bool nextPath(std::vector<std::pair<Date, Real> > &path) = 0;
       protected:
         Date start_;
@@ -55,17 +62,21 @@ namespace QuantLib {
 
     class CatRisk {
       public:
-        virtual ~CatRisk() {}
-        virtual boost::shared_ptr<CatSimulation> newSimulation(const Date& start, const Date& end) const = 0;
+        virtual ~CatRisk() = default;
+        virtual ext::shared_ptr<CatSimulation> newSimulation(const Date& start, const Date& end) const = 0;
     };
 
     class EventSetSimulation : public CatSimulation {
       public:
-        EventSetSimulation(boost::shared_ptr<std::vector<std::pair<Date, Real> > > events, Date eventsStart, Date eventsEnd, Date start, Date end);
-        virtual bool nextPath(std::vector<std::pair<Date, Real> > &path);
-      
+        EventSetSimulation(ext::shared_ptr<std::vector<std::pair<Date, Real> > > events,
+                           Date eventsStart,
+                           Date eventsEnd,
+                           Date start,
+                           Date end);
+        bool nextPath(std::vector<std::pair<Date, Real> >& path) override;
+
       private:
-        boost::shared_ptr<std::vector<std::pair<Date, Real> > > events_;
+        ext::shared_ptr<std::vector<std::pair<Date, Real> > > events_;
         Date eventsStart_;
         Date eventsEnd_;
 
@@ -77,13 +88,15 @@ namespace QuantLib {
 
     class EventSet : public CatRisk {        
       public:
-        EventSet(boost::shared_ptr<std::vector<std::pair<Date, Real> > > events, 
-                 Date eventsStart, 
+        EventSet(ext::shared_ptr<std::vector<std::pair<Date, Real> > > events,
+                 Date eventsStart,
                  Date eventsEnd);
 
-        boost::shared_ptr<CatSimulation> newSimulation(const Date& start, const Date& end) const;
+        ext::shared_ptr<CatSimulation> newSimulation(const Date& start,
+                                                     const Date& end) const override;
+
       private:
-        boost::shared_ptr<std::vector<std::pair<Date, Real> > > events_; 
+        ext::shared_ptr<std::vector<std::pair<Date, Real> > > events_; 
         Date eventsStart_;
         Date eventsEnd_;
     };
@@ -95,9 +108,9 @@ namespace QuantLib {
                            Real maxLoss, 
                            Real lambda, 
                            Real alpha, 
-                           Real beta) ;    
+                           Real beta) ;
 
-        virtual bool nextPath(std::vector<std::pair<Date, Real> > &path);
+        bool nextPath(std::vector<std::pair<Date, Real> >& path) override;
         Real generateBeta();
     
       private:
@@ -119,7 +132,8 @@ namespace QuantLib {
                  Real mean, 
                  Real stdDev);
 
-        virtual boost::shared_ptr<CatSimulation> newSimulation(const Date& start, const Date& end) const;
+        ext::shared_ptr<CatSimulation> newSimulation(const Date& start,
+                                                     const Date& end) const override;
 
       private:
         Real maxLoss_;

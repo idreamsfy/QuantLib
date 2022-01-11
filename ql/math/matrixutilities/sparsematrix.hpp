@@ -25,9 +25,6 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 #define quantlib_sparse_matrix_hpp
 
 #include <ql/qldefines.hpp>
-
-#if !defined(QL_NO_UBLAS_SUPPORT)
-
 #include <ql/math/array.hpp>
 
 #if defined(QL_PATCH_MSVC)
@@ -46,7 +43,7 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #endif
 
-#if BOOST_VERSION > 106300
+#if BOOST_VERSION == 106400
 #include <boost/serialization/array_wrapper.hpp>
 #endif
 
@@ -70,7 +67,12 @@ namespace QuantLib {
         SparseMatrixReference;
 
     inline Disposable<Array> prod(const SparseMatrix& A, const Array& x) {
-        Array b(x.size());
+        QL_REQUIRE(x.size() == A.size2(),
+                   "vectors and sparse matrices with different sizes ("
+                   << x.size() << ", " << A.size1() << "x" << A.size2() <<
+                   ") cannot be multiplied");
+
+        Array b(x.size(), 0.0);
 
         for (Size i=0; i < A.filled1()-1; ++i) {
             const Size begin = A.index1_data()[i];
@@ -86,5 +88,4 @@ namespace QuantLib {
     }
 }
 
-#endif
 #endif

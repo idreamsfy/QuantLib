@@ -47,6 +47,21 @@ class HestonModelTest {
     static void testAllIntegrationMethods();
     static void testCosHestonCumulants();
     static void testCosHestonEngine();
+    static void testCharacteristicFct();
+    static void testAndersenPiterbargPricing();
+    static void testAndersenPiterbargControlVariateIntegrand();
+    static void testAndersenPiterbargConvergence();
+    static void testPiecewiseTimeDependentChFvsHestonChF();
+    static void testPiecewiseTimeDependentComparison();
+    static void testPiecewiseTimeDependentChFAsymtotic();
+    static void testSmallSigmaExpansion();
+    static void testSmallSigmaExpansion4ExpFitting();
+    static void testExponentialFitting4StrikesAndMaturities();
+    static void testHestonEngineIntegration();
+    static void testOptimalControlVariateChoice();
+    static void testAsymptoticControlVariate();
+    static void testLocalVolFromHestonModel();
+
     static boost::unit_test_framework::test_suite* suite(SpeedLevel);
     static boost::unit_test_framework::test_suite* experimental();
 };

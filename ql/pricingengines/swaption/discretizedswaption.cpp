@@ -38,7 +38,7 @@ namespace QuantLib {
     DiscretizedSwaption::DiscretizedSwaption(const Swaption::arguments& args,
                                              const Date& referenceDate,
                                              const DayCounter& dayCounter)
-    : DiscretizedOption(boost::shared_ptr<DiscretizedAsset>(),
+    : DiscretizedOption(ext::shared_ptr<DiscretizedAsset>(),
                         args.exercise->type(),
                         std::vector<Time>()),
       arguments_(args) {
@@ -61,15 +61,13 @@ namespace QuantLib {
                     && arguments_.fixedResetDates[j] < referenceDate)
                     arguments_.fixedPayDates[j] = exerciseDate;
             }
-            for (Size j=0; j<arguments_.fixedResetDates.size(); j++) {
-                if (withinPreviousWeek(exerciseDate,
-                                       arguments_.fixedResetDates[j]))
-                    arguments_.fixedResetDates[j] = exerciseDate;
+            for (auto& fixedResetDate : arguments_.fixedResetDates) {
+                if (withinPreviousWeek(exerciseDate, fixedResetDate))
+                    fixedResetDate = exerciseDate;
             }
-            for (Size j=0; j<arguments_.floatingResetDates.size(); j++) {
-                if (withinPreviousWeek(exerciseDate,
-                                       arguments_.floatingResetDates[j]))
-                    arguments_.floatingResetDates[j] = exerciseDate;
+            for (auto& floatingResetDate : arguments_.floatingResetDates) {
+                if (withinPreviousWeek(exerciseDate, floatingResetDate))
+                    floatingResetDate = exerciseDate;
             }
         }
 
@@ -81,7 +79,7 @@ namespace QuantLib {
                                     arguments_.floatingPayDates.back());
         lastPayment_ = std::max(lastFixedPayment,lastFloatingPayment);
 
-        underlying_ = boost::shared_ptr<DiscretizedAsset>(
+        underlying_ = ext::shared_ptr<DiscretizedAsset>(
                                             new DiscretizedSwap(arguments_,
                                                                 referenceDate,
                                                                 dayCounter));

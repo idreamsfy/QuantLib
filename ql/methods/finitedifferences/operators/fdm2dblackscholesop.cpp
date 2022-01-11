@@ -26,17 +26,14 @@
 #include <ql/methods/finitedifferences/operators/fdmlinearoplayout.hpp>
 #include <ql/methods/finitedifferences/operators/fdm2dblackscholesop.hpp>
 #include <ql/methods/finitedifferences/operators/secondordermixedderivativeop.hpp>
-
-#if !defined(QL_NO_UBLAS_SUPPORT)
 #include <boost/numeric/ublas/matrix.hpp>
-#endif
 
 namespace QuantLib {
 
     Fdm2dBlackScholesOp::Fdm2dBlackScholesOp(
-            const boost::shared_ptr<FdmMesher>& mesher,
-            const boost::shared_ptr<GeneralizedBlackScholesProcess>& p1,
-            const boost::shared_ptr<GeneralizedBlackScholesProcess>& p2,
+            const ext::shared_ptr<FdmMesher>& mesher,
+            const ext::shared_ptr<GeneralizedBlackScholesProcess>& p1,
+            const ext::shared_ptr<GeneralizedBlackScholesProcess>& p2,
             Real correlation,
             Time /*maturity*/,
             bool localVol,
@@ -46,9 +43,9 @@ namespace QuantLib {
       p2_(p2),
       
       localVol1_((localVol) ? p1->localVolatility().currentLink()
-                            : boost::shared_ptr<LocalVolTermStructure>()),
+                            : ext::shared_ptr<LocalVolTermStructure>()),
       localVol2_((localVol) ? p2->localVolatility().currentLink()
-                            : boost::shared_ptr<LocalVolTermStructure>()),
+                            : ext::shared_ptr<LocalVolTermStructure>()),
                             
       x_((localVol) ? Array(Exp(mesher->locations(0))) : Array()),
       y_((localVol) ? Array(Exp(mesher->locations(1))) : Array()),
@@ -70,9 +67,9 @@ namespace QuantLib {
     void Fdm2dBlackScholesOp::setTime(Time t1, Time t2) {
         opX_.setTime(t1, t2);
         opY_.setTime(t1, t2);
-        
-        if (localVol1_) {
-            const boost::shared_ptr<FdmLinearOpLayout> layout=mesher_->layout();
+
+        if (localVol1_ != nullptr) {
+            const ext::shared_ptr<FdmLinearOpLayout> layout=mesher_->layout();
             const FdmLinearOpIterator endIter = layout->end();
 
             Array vol1(layout->size()), vol2(layout->size());
@@ -99,8 +96,7 @@ namespace QuantLib {
                 }
             }
             corrMapT_ = corrMapTemplate_.mult(vol1*vol2);
-        }
-        else {
+        } else {
             const Real vol1 = p1_
                     ->blackVolatility()->blackForwardVol(t1, t2, p1_->x0());
     
@@ -110,7 +106,7 @@ namespace QuantLib {
             corrMapT_ = corrMapTemplate_
                       .mult(Array(mesher_->layout()->size(), vol1*vol2));
         }
-        
+
         currentForwardRate_ = p1_->riskFreeRate()
                                  ->forwardRate(t1, t2, Continuous).rate();
     }
@@ -153,7 +149,6 @@ namespace QuantLib {
         return solve_splitting(0, r, dt);
     }
 
-#if !defined(QL_NO_UBLAS_SUPPORT)
     Disposable<std::vector<SparseMatrix> >
     Fdm2dBlackScholesOp::toMatrixDecomp() const {
         std::vector<SparseMatrix> retVal(3);
@@ -165,5 +160,5 @@ namespace QuantLib {
 
         return retVal;
     }
-#endif
+
 }

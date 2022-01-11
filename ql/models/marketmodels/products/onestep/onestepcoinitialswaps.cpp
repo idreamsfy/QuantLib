@@ -17,21 +17,22 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-#include <ql/models/marketmodels/products/onestep/onestepcoinitialswaps.hpp>
+#include <ql/auto_ptr.hpp>
 #include <ql/models/marketmodels/curvestate.hpp>
+#include <ql/models/marketmodels/products/onestep/onestepcoinitialswaps.hpp>
 #include <ql/models/marketmodels/utilities.hpp>
+#include <utility>
 
 namespace QuantLib {
 
-    OneStepCoinitialSwaps::OneStepCoinitialSwaps(
-        const std::vector<Time>& rateTimes,
-        const std::vector<Real>& fixedAccruals,
-        const std::vector<Real>& floatingAccruals,
-        const std::vector<Time>& paymentTimes,
-        double fixedRate)
-    : MultiProductOneStep(rateTimes),
-      fixedAccruals_(fixedAccruals), floatingAccruals_(floatingAccruals),
-      paymentTimes_(paymentTimes), fixedRate_(fixedRate) {
+    OneStepCoinitialSwaps::OneStepCoinitialSwaps(const std::vector<Time>& rateTimes,
+                                                 std::vector<Real> fixedAccruals,
+                                                 std::vector<Real> floatingAccruals,
+                                                 const std::vector<Time>& paymentTimes,
+                                                 double fixedRate)
+    : MultiProductOneStep(rateTimes), fixedAccruals_(std::move(fixedAccruals)),
+      floatingAccruals_(std::move(floatingAccruals)), paymentTimes_(paymentTimes),
+      fixedRate_(fixedRate) {
 
         checkIncreasingTimes(paymentTimes);
 
@@ -63,9 +64,9 @@ namespace QuantLib {
         return true ;
     }
 
-    std::auto_ptr<MarketModelMultiProduct>
+    QL_UNIQUE_OR_AUTO_PTR<MarketModelMultiProduct>
     OneStepCoinitialSwaps::clone() const {
-        return std::auto_ptr<MarketModelMultiProduct>(
+        return QL_UNIQUE_OR_AUTO_PTR<MarketModelMultiProduct>(
                                             new OneStepCoinitialSwaps(*this));
     }
 

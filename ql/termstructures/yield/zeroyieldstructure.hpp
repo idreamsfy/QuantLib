@@ -48,11 +48,9 @@ namespace QuantLib {
             constructors.
         */
         //@{
-        ZeroYieldStructure(
-            const DayCounter& dc = DayCounter(),
-            const std::vector<Handle<Quote> >& jumps = std::vector<Handle<Quote> >(),
-            const std::vector<Date>& jumpDates = std::vector<Date>());
-        ZeroYieldStructure(
+        explicit ZeroYieldStructure(
+            const DayCounter& dc = DayCounter());
+        explicit ZeroYieldStructure(
             const Date& referenceDate,
             const Calendar& calendar = Calendar(),
             const DayCounter& dc = DayCounter(),
@@ -83,7 +81,7 @@ namespace QuantLib {
         /*! Returns the discount factor for the given date calculating it
             from the zero yield.
         */
-        DiscountFactor discountImpl(Time) const;
+        DiscountFactor discountImpl(Time) const override;
         //@}
     };
 

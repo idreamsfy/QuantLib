@@ -18,15 +18,14 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-#include <ql/models/model.hpp>
 #include <ql/math/optimization/problem.hpp>
-#include <ql/math/optimization/projection.hpp>
 #include <ql/math/optimization/projectedconstraint.hpp>
-
+#include <ql/math/optimization/projection.hpp>
+#include <ql/models/model.hpp>
 #include <ql/utilities/null_deleter.hpp>
+#include <utility>
 
 using std::vector;
-using boost::shared_ptr;
 
 namespace QuantLib {
 
@@ -38,15 +37,15 @@ namespace QuantLib {
     class CalibratedModel::CalibrationFunction : public CostFunction {
       public:
         CalibrationFunction(CalibratedModel* model,
-                            const vector<shared_ptr<CalibrationHelper> >& h,
-                            const vector<Real>& weights,
+                            const vector<ext::shared_ptr<CalibrationHelper> >& h,
+                            vector<Real> weights,
                             const Projection& projection)
-            : model_(model, null_deleter()), instruments_(h),
-              weights_(weights), projection_(projection) { }
+        : model_(model, null_deleter()), instruments_(h), weights_(std::move(weights)),
+          projection_(projection) {}
 
-        virtual ~CalibrationFunction() {}
+        ~CalibrationFunction() override = default;
 
-        virtual Real value(const Array& params) const {
+        Real value(const Array& params) const override {
             model_->setParams(projection_.include(params));
             Real value = 0.0;
             for (Size i=0; i<instruments_.size(); i++) {
@@ -56,7 +55,7 @@ namespace QuantLib {
             return std::sqrt(value);
         }
 
-        virtual Disposable<Array> values(const Array& params) const {
+        Disposable<Array> values(const Array& params) const override {
             model_->setParams(projection_.include(params));
             Array values(instruments_.size());
             for (Size i=0; i<instruments_.size(); i++) {
@@ -66,39 +65,45 @@ namespace QuantLib {
             return values;
         }
 
-        virtual Real finiteDifferenceEpsilon() const { return 1e-6; }
+        Real finiteDifferenceEpsilon() const override { return 1e-6; }
 
       private:
-        shared_ptr<CalibratedModel> model_;
-        const vector<shared_ptr<CalibrationHelper> >& instruments_;
+        ext::shared_ptr<CalibratedModel> model_;
+        const vector<ext::shared_ptr<CalibrationHelper> >& instruments_;
         vector<Real> weights_;
         const Projection projection_;
     };
 
     void CalibratedModel::calibrate(
-                    const vector<shared_ptr<CalibrationHelper> >& instruments,
-                    OptimizationMethod& method,
-                    const EndCriteria& endCriteria,
-                    const Constraint& additionalConstraint,
-                    const vector<Real>& weights,
-                    const vector<bool>& fixParameters) {
+            const vector<ext::shared_ptr<CalibrationHelper> >& instruments,
+            OptimizationMethod& method,
+            const EndCriteria& endCriteria,
+            const Constraint& additionalConstraint,
+            const vector<Real>& weights,
+            const vector<bool>& fixParameters) {
 
-        QL_REQUIRE(weights.empty() || weights.size() == instruments.size(),
-                   "mismatch between number of instruments (" <<
-                   instruments.size() << ") and weights(" <<
-                   weights.size() << ")");
+        QL_REQUIRE(!instruments.empty(), "no instruments provided");
 
         Constraint c;
         if (additionalConstraint.empty())
             c = *constraint_;
         else
             c = CompositeConstraint(*constraint_,additionalConstraint);
+
+        QL_REQUIRE(weights.empty() || weights.size() == instruments.size(),
+                   "mismatch between number of instruments (" <<
+                   instruments.size() << ") and weights (" <<
+                   weights.size() << ")");
         vector<Real> w =
             weights.empty() ? vector<Real>(instruments.size(), 1.0): weights;
 
         Array prms = params();
+        QL_REQUIRE(fixParameters.empty() || fixParameters.size() == prms.size(),
+                   "mismatch between number of parameters (" <<
+                   prms.size() << ") and fixed-parameter specs (" <<
+                   fixParameters.size() << ")");
         vector<bool> all(prms.size(), false);
-        Projection proj(prms,fixParameters.size()>0 ? fixParameters : all);
+        Projection proj(prms, !fixParameters.empty() ? fixParameters : all);
         CalibrationFunction f(this,instruments,w,proj);
         ProjectedConstraint pc(c,proj);
         Problem prob(f, pc, proj.project(prms));
@@ -113,7 +118,7 @@ namespace QuantLib {
 
     Real CalibratedModel::value(
                 const Array& params,
-                const vector<shared_ptr<CalibrationHelper> >& instruments) {
+                const vector<ext::shared_ptr<CalibrationHelper> >& instruments) {
         vector<Real> w = vector<Real>(instruments.size(), 1.0);
         Projection p(params);
         CalibrationFunction f(this, instruments, w, p);
@@ -121,25 +126,23 @@ namespace QuantLib {
     }
 
     Disposable<Array> CalibratedModel::params() const {
-        Size size = 0, i;
-        for (i=0; i<arguments_.size(); i++)
-            size += arguments_[i].size();
+        Size size=0;
+        for (const auto& argument : arguments_)
+            size += argument.size();
         Array params(size);
-        Size k = 0;
-        for (i=0; i<arguments_.size(); i++) {
-            for (Size j=0; j<arguments_[i].size(); j++, k++) {
+        for (Size i=0, k=0; i<arguments_.size(); ++i) {
+            for (Size j=0; j<arguments_[i].size(); ++j, ++k)
                 params[k] = arguments_[i].params()[j];
-            }
         }
         return params;
     }
 
     void CalibratedModel::setParams(const Array& params) {
         Array::const_iterator p = params.begin();
-        for (Size i=0; i<arguments_.size(); ++i) {
-            for (Size j=0; j<arguments_[i].size(); ++j, ++p) {
+        for (auto& argument : arguments_) {
+            for (Size j = 0; j < argument.size(); ++j, ++p) {
                 QL_REQUIRE(p!=params.end(),"parameter array too small");
-                arguments_[i].setParam(j, *p);
+                argument.setParam(j, *p);
             }
         }
         QL_REQUIRE(p==params.end(),"parameter array too big!");

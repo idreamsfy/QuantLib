@@ -17,17 +17,17 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+#include <ql/auto_ptr.hpp>
+#include <ql/errors.hpp>
 #include <ql/models/marketmodels/callability/nothingexercisevalue.hpp>
 #include <ql/models/marketmodels/utilities.hpp>
-#include <ql/errors.hpp>
+#include <utility>
 
 namespace QuantLib {
 
-    NothingExerciseValue::NothingExerciseValue(
-                                               const std::vector<Time>& rateTimes,
-                                               const std::valarray<bool>& isExerciseTime)
-    : rateTimes_(rateTimes), isExerciseTime_(isExerciseTime),
-      currentIndex_(0) {
+    NothingExerciseValue::NothingExerciseValue(const std::vector<Time>& rateTimes,
+                                               std::valarray<bool> isExerciseTime)
+    : rateTimes_(rateTimes), isExerciseTime_(std::move(isExerciseTime)), currentIndex_(0) {
 
         checkIncreasingTimes(rateTimes);
         QL_REQUIRE(rateTimes.size() >= 2,
@@ -85,9 +85,9 @@ namespace QuantLib {
          return cf_;
     }
 
-    std::auto_ptr<MarketModelExerciseValue>
+    QL_UNIQUE_OR_AUTO_PTR<MarketModelExerciseValue>
     NothingExerciseValue::clone() const {
-        return std::auto_ptr<MarketModelExerciseValue>(
+        return QL_UNIQUE_OR_AUTO_PTR<MarketModelExerciseValue>(
                                              new NothingExerciseValue(*this));
     }
 

@@ -35,17 +35,20 @@ namespace QuantLib {
         DiscretizedSwap(const VanillaSwap::arguments&,
                         const Date& referenceDate,
                         const DayCounter& dayCounter);
-        void reset(Size size);
-        std::vector<Time> mandatoryTimes() const;
+        void reset(Size size) override;
+        std::vector<Time> mandatoryTimes() const override;
+
       protected:
-        void preAdjustValuesImpl();
-        void postAdjustValuesImpl();
+        void preAdjustValuesImpl() override;
+        void postAdjustValuesImpl() override;
+
       private:
         VanillaSwap::arguments arguments_;
         std::vector<Time> fixedResetTimes_;
         std::vector<Time> fixedPayTimes_;
         std::vector<Time> floatingResetTimes_;
         std::vector<Time> floatingPayTimes_;
+        bool includeTodaysCashFlows_;
     };
 
 }

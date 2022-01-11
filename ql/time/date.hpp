@@ -7,6 +7,8 @@
  Copyright (C) 2006 Katiuscia Manzoni
  Copyright (C) 2006 Toyin Akin
  Copyright (C) 2015 Klaus Spanderen
+ Copyright (C) 2020 Leonardo Arcari
+ Copyright (C) 2020 Kline s.r.l.
 
  This file is part of QuantLib, a free-software/open-source library
  for financial quantitative analysts and developers - http://quantlib.org/
@@ -278,32 +280,54 @@ namespace QuantLib {
     /*! \relates Date */
     bool operator>=(const Date&, const Date&);
 
+    /*!
+      Compute a hash value of @p d.
+
+      This method makes Date hashable via <tt>boost::hash</tt>.
+
+      Example:
+
+      \code{.cpp}
+      #include <boost/unordered_set.hpp>
+
+      boost::unordered_set<Date> set;
+      Date d = Date(1, Jan, 2020); 
+
+      set.insert(d);
+      assert(set.count(d)); // 'd' was added to 'set'
+      \endcode
+
+      \param [in] d Date to hash
+      \return A hash value of @p d
+      \relates Date
+    */
+    std::size_t hash_value(const Date& d);
+
     /*! \relates Date */
     std::ostream& operator<<(std::ostream&, const Date&);
 
     namespace detail {
 
         struct short_date_holder {
-            short_date_holder(const Date d) : d(d) {}
+            explicit short_date_holder(const Date d) : d(d) {}
             Date d;
         };
         std::ostream& operator<<(std::ostream&, const short_date_holder&);
 
         struct long_date_holder {
-            long_date_holder(const Date& d) : d(d) {}
+            explicit long_date_holder(const Date& d) : d(d) {}
             Date d;
         };
         std::ostream& operator<<(std::ostream&, const long_date_holder&);
 
         struct iso_date_holder {
-            iso_date_holder(const Date& d) : d(d) {}
+            explicit iso_date_holder(const Date& d) : d(d) {}
             Date d;
         };
         std::ostream& operator<<(std::ostream&, const iso_date_holder&);
 
         struct formatted_date_holder {
-            formatted_date_holder(const Date& d, const std::string& f)
-            : d(d), f(f) {}
+            formatted_date_holder(const Date& d, std::string f) : d(d), f(std::move(f)) {}
             Date d;
             std::string f;
         };
@@ -312,7 +336,7 @@ namespace QuantLib {
 
 #ifdef QL_HIGH_RESOLUTION_DATE
         struct iso_datetime_holder {
-            iso_datetime_holder(const Date& d) : d(d) {}
+            explicit iso_datetime_holder(const Date& d) : d(d) {}
             Date d;
         };
         std::ostream& operator<<(std::ostream&, const iso_datetime_holder&);
@@ -350,8 +374,8 @@ namespace QuantLib {
     template <>
     class Null<Date> {
       public:
-        Null() {}
-        operator Date() const { return Date(); }
+        Null() = default;
+        operator Date() const { return {}; }
     };
 
 
@@ -394,7 +418,7 @@ namespace QuantLib {
     inline Date Date::endOfMonth(const Date& d) {
         Month m = d.month();
         Year y = d.year();
-        return Date(monthLength(m, isLeap(y)), m, y);
+        return {monthLength(m, isLeap(y)), m, y};
     }
 
     inline bool Date::isEndOfMonth(const Date& d) {

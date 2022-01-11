@@ -172,7 +172,7 @@ namespace QuantLib {
                     e[k+1] += 1.0;
                 }
                 e[k] = -e[k];
-                if ((k+1 < m_) & (e[k] != 0.0)) {
+                if ((k+1 < m_) && (e[k] != 0.0)) {
 
                     // Apply the transformation.
 
@@ -249,7 +249,7 @@ namespace QuantLib {
         // generate V
 
         for (k = n_-1; k >= 0; --k) {
-            if ((k < nrt) & (e[k] != 0.0)) {
+            if ((k < nrt) && (e[k] != 0.0)) {
                 for (j = k+1; j < n_; ++j) {
                     Real t = 0;
                     for (i = k+1; i < n_; i++) {
@@ -393,7 +393,7 @@ namespace QuantLib {
                   Real b = ((spm1 + sp)*(spm1 - sp) + epm1*epm1)/2.0;
                   Real c = (sp*epm1)*(sp*epm1);
                   Real shift = 0.0;
-                  if ((b != 0.0) | (c != 0.0)) {
+                  if ((b != 0.0) || (c != 0.0)) {
                       shift = std::sqrt(b*b + c);
                       if (b < 0.0) {
                           shift = -shift;
@@ -514,11 +514,11 @@ namespace QuantLib {
     }
 
     Size SVD::rank() const {
-        Real eps = QL_EPSILON;
+        QL_CONSTEXPR Real eps = QL_EPSILON;
         Real tol = m_*s_[0]*eps;
         Size r = 0;
-        for (Size i = 0; i < s_.size(); i++) {
-            if (s_[i] > tol) {
+        for (double i : s_) {
+            if (i > tol) {
                 r++;
             }
         }

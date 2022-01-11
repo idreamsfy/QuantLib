@@ -42,12 +42,13 @@ namespace QuantLib {
                         Barrier::Type barrierType,
                         Real barrier,
                         Real rebate,
-                        const boost::shared_ptr<StrikedTypePayoff>& payoff,
-                        const boost::shared_ptr<Exercise>& exercise,
+                        const ext::shared_ptr<StrikedTypePayoff>& payoff,
+                        const ext::shared_ptr<Exercise>& exercise,
                         const std::vector<Date>& dividendDates,
                         const std::vector<Real>& dividends);
       protected:
-        void setupArguments(PricingEngine::arguments*) const;
+        void setupArguments(PricingEngine::arguments*) const override;
+
       private:
         DividendSchedule cashFlow_;
     };
@@ -57,8 +58,8 @@ namespace QuantLib {
     class DividendBarrierOption::arguments : public BarrierOption::arguments {
       public:
         DividendSchedule cashFlow;
-        arguments() {}
-        void validate() const;
+        arguments() = default;
+        void validate() const override;
     };
 
     //! %Dividend-barrier-option %engine base class

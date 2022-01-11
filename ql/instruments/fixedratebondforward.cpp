@@ -32,16 +32,17 @@ namespace QuantLib {
                     const DayCounter& dayCounter,
                     const Calendar& calendar,
                     BusinessDayConvention businessDayConvention,
-                    const boost::shared_ptr<FixedRateBond>& fixedCouponBond,
+                    const ext::shared_ptr<FixedRateBond>& fixedCouponBond,
                     const Handle<YieldTermStructure>& discountCurve,
                     const Handle<YieldTermStructure>& incomeDiscountCurve)
     : Forward(dayCounter, calendar, businessDayConvention, settlementDays,
-              boost::shared_ptr<Payoff>(new ForwardTypePayoff(type,strike)),
+              ext::shared_ptr<Payoff>(new ForwardTypePayoff(type,strike)),
               valueDate, maturityDate, discountCurve),
       fixedCouponBond_(fixedCouponBond) {
 
         incomeDiscountCurve_ = incomeDiscountCurve;
         registerWith(incomeDiscountCurve_);
+        registerWith(fixedCouponBond);
     }
 
 
@@ -70,11 +71,10 @@ namespace QuantLib {
           2. considers as income: all coupons paid between settlementDate()
           and contract delivery/maturity date
         */
-        for (Size i = 0; i < cf.size(); ++i) {
-            if (!cf[i]->hasOccurred(settlement, false)) {
-                if (cf[i]->hasOccurred(maturityDate_, false)) {
-                    income += cf[i]->amount() *
-                              incomeDiscountCurve->discount(cf[i]->date()) ;
+        for (auto& i : cf) {
+            if (!i->hasOccurred(settlement, false)) {
+                if (i->hasOccurred(maturityDate_, false)) {
+                    income += i->amount() * incomeDiscountCurve->discount(i->date());
                 } else {
                     break;
                 }

@@ -21,33 +21,31 @@
     \brief multi model process for hybrid products
 */
 
-#include <ql/math/matrixutilities/svd.hpp>
+#include <ql/math/functional.hpp>
 #include <ql/math/matrixutilities/pseudosqrt.hpp>
+#include <ql/math/matrixutilities/svd.hpp>
 #include <ql/processes/jointstochasticprocess.hpp>
+#include <utility>
 
 namespace QuantLib {
 
     JointStochasticProcess::JointStochasticProcess(
-        const std::vector<boost::shared_ptr<StochasticProcess> > & l,
-        Size factors)
-    : l_      (l),
-      size_   (0),
-      factors_(factors),
-      modelFactors_(0) {
+        std::vector<ext::shared_ptr<StochasticProcess> > l, Size factors)
+    : l_(std::move(l)), size_(0), factors_(factors), modelFactors_(0) {
 
-        for (const_iterator iter=l_.begin(); iter != l_.end(); ++iter) {
-            registerWith(*iter);
+        for (const auto& iter : l_) {
+            registerWith(iter);
         }
 
         vsize_.reserve   (l_.size()+1);
         vfactors_.reserve(l_.size()+1);
 
-        for (const_iterator iter = l_.begin(); iter != l_.end(); ++iter) {
+        for (const auto& iter : l_) {
             vsize_.push_back(size_);
-            size_ += (*iter)->size();
+            size_ += iter->size();
 
             vfactors_.push_back(modelFactors_);
-            modelFactors_ += (*iter)->factors();
+            modelFactors_ += iter->factors();
         }
 
         vsize_.push_back(size_);
@@ -80,7 +78,7 @@ namespace QuantLib {
     Disposable<Array> JointStochasticProcess::initialValues() const {
         Array retVal(size());
 
-        for (const_iterator iter = l_.begin(); iter != l_.end(); ++iter) {
+        for (auto iter = l_.begin(); iter != l_.end(); ++iter) {
             const Array& pInitValues = (*iter)->initialValues();
 
             std::copy(pInitValues.begin(), pInitValues.end(),
@@ -219,8 +217,7 @@ namespace QuantLib {
                     if (vol > 0.0) {
                         std::transform(stdDev.row_begin(i), stdDev.row_end(i),
                                        stdDev.row_begin(i),
-                                       std::bind2nd(std::divides<Real>(),
-                                                    vol));
+                                       divide_by<Real>(vol));
                     }
                     else {
                         // keep the svd happy
@@ -277,7 +274,7 @@ namespace QuantLib {
 
 
         Array retVal(size());
-        for (const_iterator iter = l_.begin(); iter != l_.end(); ++iter) {
+        for (auto iter = l_.begin(); iter != l_.end(); ++iter) {
             const Size i = iter - l_.begin();
 
             Array dz((*iter)->factors());
@@ -295,13 +292,13 @@ namespace QuantLib {
         return this->postEvolve(t0, x0, dt, dv, retVal);
     }
 
-    const std::vector<boost::shared_ptr<StochasticProcess> > &
+    const std::vector<ext::shared_ptr<StochasticProcess> > &
                           JointStochasticProcess::constituents() const {
         return l_;
     }
 
     Time JointStochasticProcess::time(const Date& date) const {
-        QL_REQUIRE(l_.size() > 0, "process list is empty");
+        QL_REQUIRE(!l_.empty(), "process list is empty");
 
         return l_[0]->time(date);
     }

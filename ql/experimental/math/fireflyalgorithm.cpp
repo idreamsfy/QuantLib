@@ -17,27 +17,24 @@ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-#include <ql/qldefines.hpp>
-
-#if BOOST_VERSION >= 104700
-
 #include <ql/experimental/math/fireflyalgorithm.hpp>
 #include <ql/math/randomnumbers/sobolrsg.hpp>
-#include <boost/math/special_functions/fpclassify.hpp>
 #include <algorithm>
+#include <cmath>
+#include <utility>
 
 namespace QuantLib {
-    FireflyAlgorithm::FireflyAlgorithm(Size M, 
-        boost::shared_ptr<Intensity> intensity,
-        boost::shared_ptr<RandomWalk> randomWalk,
-        Size Mde, Real mutation,
-        Real crossover, unsigned long seed):
-        mutation_(mutation), crossover_(crossover),
-        M_(M), Mde_(Mde), Mfa_(M_-Mde_), 
-        intensity_(intensity),
-        randomWalk_(randomWalk),
-        drawIndex_(base_generator_type(seed), uniform_integer(Mfa_, Mde > 0 ? M_-1 : M_)),
-        rng_(seed){
+    FireflyAlgorithm::FireflyAlgorithm(Size M,
+                                       ext::shared_ptr<Intensity> intensity,
+                                       ext::shared_ptr<RandomWalk> randomWalk,
+                                       Size Mde,
+                                       Real mutation,
+                                       Real crossover,
+                                       unsigned long seed)
+    : mutation_(mutation), crossover_(crossover), M_(M), Mde_(Mde), Mfa_(M_ - Mde_),
+      intensity_(std::move(intensity)), randomWalk_(std::move(randomWalk)),
+      drawIndex_(base_generator_type(seed), uniform_integer(Mfa_, Mde > 0 ? M_ - 1 : M_)),
+      rng_(seed) {
         QL_REQUIRE(M_ >= Mde_,
             "Differential Evolution subpopulation cannot be larger than total population");
     }
@@ -58,16 +55,16 @@ namespace QuantLib {
         //Prepare containers
         for (Size i = 0; i < M_; i++) {
             const SobolRsg::sample_type::value_type &sample = sobol.nextSequence().value;
-            x_.push_back(Array(N_, 0.0));
-            xI_.push_back(Array(N_, 0.0));
-            xRW_.push_back(Array(N_, 0.0));
+            x_.emplace_back(N_, 0.0);
+            xI_.emplace_back(N_, 0.0);
+            xRW_.emplace_back(N_, 0.0);
             Array& x = x_.back();
             for (Size j = 0; j < N_; j++) {
                 //Assign X=lb+(ub-lb)*random
                 x[j] = lX_[j] + bounds[j] * sample[j];
             }
             //Evaluate point
-            values_.push_back(std::make_pair(P.value(x), i));
+            values_.emplace_back(P.value(x), i);
         }
 
         //init intensity & randomWalk
@@ -86,7 +83,7 @@ namespace QuantLib {
         
         startState(P, endCriteria);
 
-        bool isFA = Mfa_ > 0 ? true : false;
+        bool isFA = Mfa_ > 0;
         //Variables for DE
         Array z(N_, 0.0);
         Size indexR1, indexR2;
@@ -195,7 +192,7 @@ namespace QuantLib {
                         }
                     }
                     Real val = P.value(z);
-                    if(!boost::math::isnan(val))
+                    if(!std::isnan(val))
 					{
 						//Accept new point
                         x = z;
@@ -246,6 +243,4 @@ namespace QuantLib {
         }
     }
 }
-
-#endif
 

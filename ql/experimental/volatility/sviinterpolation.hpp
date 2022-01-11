@@ -24,11 +24,9 @@
 #ifndef quantlib_svi_interpolation_hpp
 #define quantlib_svi_interpolation_hpp
 
-#include <ql/math/interpolations/xabrinterpolation.hpp>
 #include <ql/experimental/volatility/svismilesection.hpp>
-
-#include <boost/make_shared.hpp>
-#include <boost/assign/list_of.hpp>
+#include <ql/math/interpolations/xabrinterpolation.hpp>
+#include <utility>
 
 namespace QuantLib {
 
@@ -45,7 +43,6 @@ inline void checkSviParameters(const Real a, const Real b, const Real sigma,
                                                << ") must be non negative");
     QL_REQUIRE(b * (1.0 + std::fabs(rho)) < 4.0,
                "b(1+|rho|) must be less than 4");
-    return;
 }
 
 inline Real sviTotalVariance(const Real a, const Real b, const Real sigma,
@@ -134,10 +131,10 @@ struct SviSpecs {
         return blackFormulaStdDevDerivative(strike, forward, stdDev, 1.0);
     }
     typedef SviWrapper type;
-    boost::shared_ptr<type> instance(const Time t, const Real &forward,
+    ext::shared_ptr<type> instance(const Time t, const Real &forward,
                                      const std::vector<Real> &params,
                                      const std::vector<Real> &addParams) {
-        return boost::make_shared<type>(t, forward, params);
+        return ext::make_shared<type>(t, forward, params);
     }
 };
 }
@@ -153,23 +150,22 @@ class SviInterpolation : public Interpolation {
                      const Real &forward, Real a, Real b, Real sigma, Real rho,
                      Real m, bool aIsFixed, bool bIsFixed, bool sigmaIsFixed,
                      bool rhoIsFixed, bool mIsFixed, bool vegaWeighted = true,
-                     const boost::shared_ptr<EndCriteria> &endCriteria =
-                         boost::shared_ptr<EndCriteria>(),
-                     const boost::shared_ptr<OptimizationMethod> &optMethod =
-                         boost::shared_ptr<OptimizationMethod>(),
+                     const ext::shared_ptr<EndCriteria> &endCriteria =
+                         ext::shared_ptr<EndCriteria>(),
+                     const ext::shared_ptr<OptimizationMethod> &optMethod =
+                         ext::shared_ptr<OptimizationMethod>(),
                      const Real errorAccept = 0.0020,
                      const bool useMaxError = false,
                      const Size maxGuesses = 50) {
 
-        impl_ = boost::shared_ptr<Interpolation::Impl>(
+        impl_ = ext::shared_ptr<Interpolation::Impl>(
             new detail::XABRInterpolationImpl<I1, I2, detail::SviSpecs>(
                 xBegin, xEnd, yBegin, t, forward,
-                boost::assign::list_of(a)(b)(sigma)(rho)(m),
-                boost::assign::list_of(aIsFixed)(bIsFixed)(sigmaIsFixed)(
-                    rhoIsFixed)(mIsFixed),
+                {a, b, sigma, rho, m},
+                {aIsFixed, bIsFixed, sigmaIsFixed, rhoIsFixed, mIsFixed},
                 vegaWeighted, endCriteria, optMethod, errorAccept, useMaxError,
                 maxGuesses));
-        coeffs_ = boost::dynamic_pointer_cast<
+        coeffs_ = ext::dynamic_pointer_cast<
             detail::XABRCoeffHolder<detail::SviSpecs> >(impl_);
     }
     Real expiry() const { return coeffs_->t_; }
@@ -187,28 +183,35 @@ class SviInterpolation : public Interpolation {
     EndCriteria::Type endCriteria() { return coeffs_->XABREndCriteria_; }
 
   private:
-    boost::shared_ptr<detail::XABRCoeffHolder<detail::SviSpecs> > coeffs_;
+    ext::shared_ptr<detail::XABRCoeffHolder<detail::SviSpecs> > coeffs_;
 };
 
 //! %Svi interpolation factory and traits
 class Svi {
   public:
-    Svi(Time t, Real forward, Real a, Real b, Real sigma, Real rho, Real m,
-         bool aIsFixed, bool bIsFixed, bool sigmaIsFixed, bool rhoIsFixed,
-         bool mIsFixed, bool vegaWeighted = false,
-         const boost::shared_ptr<EndCriteria> endCriteria =
-             boost::shared_ptr<EndCriteria>(),
-         const boost::shared_ptr<OptimizationMethod> optMethod =
-             boost::shared_ptr<OptimizationMethod>(),
-         const Real errorAccept = 0.0020, const bool useMaxError = false,
-         const Size maxGuesses = 50)
-        : t_(t), forward_(forward), a_(a), b_(b), sigma_(sigma), rho_(rho),
-          m_(m), aIsFixed_(aIsFixed), bIsFixed_(bIsFixed),
-          sigmaIsFixed_(sigmaIsFixed), rhoIsFixed_(rhoIsFixed),
-          mIsFixed_(mIsFixed), vegaWeighted_(vegaWeighted),
-          endCriteria_(endCriteria), optMethod_(optMethod),
-          errorAccept_(errorAccept), useMaxError_(useMaxError),
-          maxGuesses_(maxGuesses) {}
+    Svi(Time t,
+        Real forward,
+        Real a,
+        Real b,
+        Real sigma,
+        Real rho,
+        Real m,
+        bool aIsFixed,
+        bool bIsFixed,
+        bool sigmaIsFixed,
+        bool rhoIsFixed,
+        bool mIsFixed,
+        bool vegaWeighted = false,
+        ext::shared_ptr<EndCriteria> endCriteria = ext::shared_ptr<EndCriteria>(),
+        ext::shared_ptr<OptimizationMethod> optMethod = ext::shared_ptr<OptimizationMethod>(),
+        const Real errorAccept = 0.0020,
+        const bool useMaxError = false,
+        const Size maxGuesses = 50)
+    : t_(t), forward_(forward), a_(a), b_(b), sigma_(sigma), rho_(rho), m_(m), aIsFixed_(aIsFixed),
+      bIsFixed_(bIsFixed), sigmaIsFixed_(sigmaIsFixed), rhoIsFixed_(rhoIsFixed),
+      mIsFixed_(mIsFixed), vegaWeighted_(vegaWeighted), endCriteria_(std::move(endCriteria)),
+      optMethod_(std::move(optMethod)), errorAccept_(errorAccept), useMaxError_(useMaxError),
+      maxGuesses_(maxGuesses) {}
     template <class I1, class I2>
     Interpolation interpolate(const I1 &xBegin, const I1 &xEnd,
                               const I2 &yBegin) const {
@@ -226,8 +229,8 @@ class Svi {
     Real a_, b_, sigma_, rho_, m_;
     bool aIsFixed_, bIsFixed_, sigmaIsFixed_, rhoIsFixed_, mIsFixed_;
     bool vegaWeighted_;
-    const boost::shared_ptr<EndCriteria> endCriteria_;
-    const boost::shared_ptr<OptimizationMethod> optMethod_;
+    const ext::shared_ptr<EndCriteria> endCriteria_;
+    const ext::shared_ptr<OptimizationMethod> optMethod_;
     const Real errorAccept_;
     const bool useMaxError_;
     const Size maxGuesses_;

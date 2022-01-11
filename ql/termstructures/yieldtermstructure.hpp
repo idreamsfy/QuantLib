@@ -48,18 +48,16 @@ namespace QuantLib {
             constructors.
         */
         //@{
-        YieldTermStructure(const DayCounter& dc = DayCounter(),
-                           const std::vector<Handle<Quote> >& jumps = std::vector<Handle<Quote> >(),
-                           const std::vector<Date>& jumpDates = std::vector<Date>());
+        explicit YieldTermStructure(const DayCounter& dc = DayCounter());
         YieldTermStructure(const Date& referenceDate,
                            const Calendar& cal = Calendar(),
                            const DayCounter& dc = DayCounter(),
-                           const std::vector<Handle<Quote> >& jumps = std::vector<Handle<Quote> >(),
+                           std::vector<Handle<Quote> > jumps = std::vector<Handle<Quote> >(),
                            const std::vector<Date>& jumpDates = std::vector<Date>());
         YieldTermStructure(Natural settlementDays,
                            const Calendar& cal,
                            const DayCounter& dc = DayCounter(),
-                           const std::vector<Handle<Quote> >& jumps = std::vector<Handle<Quote> >(),
+                           std::vector<Handle<Quote> > jumps = std::vector<Handle<Quote> >(),
                            const std::vector<Date>& jumpDates = std::vector<Date>());
         //@}
 
@@ -154,7 +152,7 @@ namespace QuantLib {
 
         //! \name Observer interface
         //@{
-        void update();
+        void update() override;
         //@}
       protected:
         /*! \name Calculations
@@ -170,12 +168,12 @@ namespace QuantLib {
         //@}
       private:
         // methods
-        void setJumps();
+        void setJumps(const Date& referenceDate);
         // data members
         std::vector<Handle<Quote> > jumps_;
         std::vector<Date> jumpDates_;
         std::vector<Time> jumpTimes_;
-        Size nJumps_;
+        Size nJumps_ = 0;
         Date latestReference_;
     };
 

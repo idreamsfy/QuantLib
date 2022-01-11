@@ -29,14 +29,18 @@ namespace QuantLib {
     class SwapRateTrigger : public ExerciseStrategy<CurveState> {
       public:
         SwapRateTrigger(const std::vector<Time>& rateTimes,
-                        const std::vector<Rate>& swapTriggers,
+                        std::vector<Rate> swapTriggers,
                         const std::vector<Time>& exerciseTimes);
-        std::vector<Time> exerciseTimes() const;
-        std::vector<Time> relevantTimes() const;
-        void reset();
-        bool exercise(const CurveState& currentState) const;
-        void nextStep(const CurveState& currentState);
+        std::vector<Time> exerciseTimes() const override;
+        std::vector<Time> relevantTimes() const override;
+        void reset() override;
+        bool exercise(const CurveState& currentState) const override;
+        void nextStep(const CurveState& currentState) override;
+#if defined(QL_USE_STD_UNIQUE_PTR)
+        std::unique_ptr<ExerciseStrategy<CurveState> > clone() const override;
+#else
         std::auto_ptr<ExerciseStrategy<CurveState> > clone() const;
+        #endif
       private:
         std::vector<Time> rateTimes_;
         std::vector<Rate> swapTriggers_;

@@ -27,7 +27,7 @@
 */
 
 #include <ql/qldefines.hpp>
-#ifdef BOOST_MSVC
+#if !defined(BOOST_ALL_NO_LIB) && defined(BOOST_MSVC)
 #  include <ql/auto_link.hpp>
 #endif
 #include <ql/termstructures/yield/fittedbonddiscountcurve.hpp>
@@ -39,10 +39,8 @@
 #include <ql/time/calendars/target.hpp>
 #include <ql/time/daycounters/simpledaycounter.hpp>
 
-#include <boost/timer.hpp>
 #include <iostream>
 #include <iomanip>
-#include <boost/make_shared.hpp>
 
 #define LENGTH(a) (sizeof(a)/sizeof(a[0]))
 
@@ -51,7 +49,7 @@ using namespace QuantLib;
 
 #if defined(QL_ENABLE_SESSIONS)
 namespace QuantLib {
-    Integer sessionId() { return 0; }
+    ThreadKey sessionId() { return {}; }
 }
 #endif
 
@@ -72,7 +70,7 @@ Rate parRate(const YieldTermStructure& yts,
 }
 
 void printOutput(const std::string& tag,
-                 const boost::shared_ptr<FittedBondDiscountCurve>& curve) {
+                 const ext::shared_ptr<FittedBondDiscountCurve>& curve) {
     cout << tag << endl;
     cout << "reference date : "
          << curve->referenceDate()
@@ -88,18 +86,16 @@ int main(int, char* []) {
 
     try {
 
-        boost::timer timer;
-
         const Size numberOfBonds = 15;
         Real cleanPrice[numberOfBonds];
 
-        for (Size i=0; i<numberOfBonds; i++) {
-            cleanPrice[i]=100.0;
+        for (double& i : cleanPrice) {
+            i = 100.0;
         }
 
-        std::vector< boost::shared_ptr<SimpleQuote> > quote;
-        for (Size i=0; i<numberOfBonds; i++) {
-            boost::shared_ptr<SimpleQuote> cp(new SimpleQuote(cleanPrice[i]));
+        std::vector< ext::shared_ptr<SimpleQuote> > quote;
+        for (double i : cleanPrice) {
+            ext::shared_ptr<SimpleQuote> cp(new SimpleQuote(i));
             quote.push_back(cp);
         }
 
@@ -137,8 +133,8 @@ int main(int, char* []) {
         cout << "Bonds' settlement date: " << bondSettlementDate << endl;
         cout << "Calculating fit for 15 bonds....." << endl << endl;
 
-        std::vector<boost::shared_ptr<BondHelper> > instrumentsA;
-        std::vector<boost::shared_ptr<RateHelper> > instrumentsB;
+        std::vector<ext::shared_ptr<BondHelper> > instrumentsA;
+        std::vector<ext::shared_ptr<RateHelper> > instrumentsB;
 
         for (Size j=0; j<LENGTH(lengths); j++) {
 
@@ -148,7 +144,7 @@ int main(int, char* []) {
                               calendar, accrualConvention, accrualConvention,
                               DateGeneration::Backward, false);
 
-            boost::shared_ptr<BondHelper> helperA(
+            ext::shared_ptr<BondHelper> helperA(
                      new FixedRateBondHelper(quoteHandle[j],
                                              bondSettlementDays,
                                              100.0,
@@ -158,7 +154,7 @@ int main(int, char* []) {
                                              convention,
                                              redemption));
 
-            boost::shared_ptr<RateHelper> helperB(
+            ext::shared_ptr<RateHelper> helperB(
                      new FixedRateBondHelper(quoteHandle[j],
                                              bondSettlementDays,
                                              100.0,
@@ -176,7 +172,7 @@ int main(int, char* []) {
         Real tolerance = 1.0e-10;
         Size max = 5000;
 
-        boost::shared_ptr<YieldTermStructure> ts0 (
+        ext::shared_ptr<YieldTermStructure> ts0 (
               new PiecewiseYieldCurve<Discount,LogLinear>(curveSettlementDays,
                                                           calendar,
                                                           instrumentsB,
@@ -184,7 +180,7 @@ int main(int, char* []) {
 
         ExponentialSplinesFitting exponentialSplines(constrainAtZero);
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts1 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts1 (
                   new FittedBondDiscountCurve(curveSettlementDays,
                                               calendar,
                                               instrumentsA,
@@ -198,7 +194,7 @@ int main(int, char* []) {
 
         SimplePolynomialFitting simplePolynomial(3, constrainAtZero);
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts2 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts2 (
                     new FittedBondDiscountCurve(curveSettlementDays,
                                                 calendar,
                                                 instrumentsA,
@@ -212,7 +208,7 @@ int main(int, char* []) {
 
         NelsonSiegelFitting nelsonSiegel;
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts3 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts3 (
                         new FittedBondDiscountCurve(curveSettlementDays,
                                                     calendar,
                                                     instrumentsA,
@@ -231,13 +227,13 @@ int main(int, char* []) {
                            20.0,  25.0, 30.0, 40.0, 50.0 };
 
         std::vector<Time> knotVector;
-        for (Size i=0; i< LENGTH(knots); i++) {
-            knotVector.push_back(knots[i]);
+        for (double& knot : knots) {
+            knotVector.push_back(knot);
         }
 
         CubicBSplinesFitting cubicBSplines(knotVector, constrainAtZero);
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts4 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts4 (
                        new FittedBondDiscountCurve(curveSettlementDays,
                                                    calendar,
                                                    instrumentsA,
@@ -250,7 +246,7 @@ int main(int, char* []) {
 
         SvenssonFitting svensson;
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts5 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts5 (
                         new FittedBondDiscountCurve(curveSettlementDays,
                                                     calendar,
                                                     instrumentsA,
@@ -262,13 +258,13 @@ int main(int, char* []) {
         printOutput("(e) Svensson", ts5);
 
         Handle<YieldTermStructure> discountCurve(
-            boost::make_shared<FlatForward>(
+            ext::make_shared<FlatForward>(
                                     curveSettlementDays, calendar, 0.01, dc));
         SpreadFittingMethod nelsonSiegelSpread(
-                                    boost::make_shared<NelsonSiegelFitting>(),
+                                    ext::make_shared<NelsonSiegelFitting>(),
                                     discountCurve);
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts6 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts6 (
                         new FittedBondDiscountCurve(curveSettlementDays,
                                                     calendar,
                                                     instrumentsA,
@@ -279,6 +275,19 @@ int main(int, char* []) {
 
         printOutput("(f) Nelson-Siegel spreaded", ts6);
 
+        //Fixed kappa, and 7 coefficients
+        ExponentialSplinesFitting exponentialSplinesFixed(constrainAtZero,7,0.02);
+
+        ext::shared_ptr<FittedBondDiscountCurve> ts7(
+                        new FittedBondDiscountCurve(curveSettlementDays,
+                                                    calendar, 
+                                                    instrumentsA, 
+                                                    dc, 
+                                                    exponentialSplinesFixed, 
+                                                    tolerance, 
+                                                    max));
+
+        printOutput("(g) exponential splines, fixed kappa", ts7);
 
         cout << "Output par rates for each curve. In this case, "
              << endl
@@ -294,11 +303,12 @@ int main(int, char* []) {
              << setw(6) << "(c)" << " | "
              << setw(6) << "(d)" << " | "
              << setw(6) << "(e)" << " | "
-             << setw(6) << "(f)" << endl;
+             << setw(6) << "(f)" << " | "
+             << setw(6) << "(g)" << endl;
 
         for (Size i=0; i<instrumentsA.size(); i++) {
 
-            std::vector<boost::shared_ptr<CashFlow> > cfs =
+            std::vector<ext::shared_ptr<CashFlow> > cfs =
                 instrumentsA[i]->bond()->cashflows();
 
             Size cfSize = instrumentsA[i]->bond()->cashflows().size();
@@ -337,7 +347,10 @@ int main(int, char* []) {
                  << 100.*parRate(*ts5,keyDates,dc)  << " | "
                  // Nelson-Siegel Spreaded
                  << setw(6) << fixed << setprecision(3)
-                 << 100.*parRate(*ts6,keyDates,dc) << endl;
+                 << 100.*parRate(*ts6,keyDates,dc) << " | "
+                 // Exponential, fixed kappa
+                 << setw(6) << fixed << setprecision(3) 
+                 << 100. *parRate(*ts7, keyDates, dc) << endl;
         }
 
         cout << endl << endl << endl;
@@ -366,6 +379,8 @@ int main(int, char* []) {
 
         printOutput("(f) Nelson-Siegel spreaded", ts6);
 
+        printOutput("(g) exponential spline, fixed kappa", ts7);
+
         cout << endl
              << endl;
 
@@ -378,11 +393,12 @@ int main(int, char* []) {
              << setw(6) << "(c)" << " | "
              << setw(6) << "(d)" << " | "
              << setw(6) << "(e)" << " | "
-             << setw(6) << "(f)" << endl;
+             << setw(6) << "(f)" << " | "
+             << setw(6) << "(g)" << endl;
 
         for (Size i=0; i<instrumentsA.size(); i++) {
 
-            std::vector<boost::shared_ptr<CashFlow> > cfs =
+            std::vector<ext::shared_ptr<CashFlow> > cfs =
                 instrumentsA[i]->bond()->cashflows();
 
             Size cfSize = instrumentsA[i]->bond()->cashflows().size();
@@ -421,7 +437,10 @@ int main(int, char* []) {
                  << 100.*parRate(*ts5,keyDates,dc) << " | "
                  // Nelson-Siegel Spreaded
                  << setw(6) << fixed << setprecision(3)
-                 << 100.*parRate(*ts6,keyDates,dc) << endl;
+                 << 100.*parRate(*ts6,keyDates,dc) << " | "
+                 // exponential, fixed kappa
+                 << setw(6) << fixed << setprecision(3) 
+                 << 100. * parRate(*ts7, keyDates, dc) << endl;
         }
 
         cout << endl << endl << endl;
@@ -441,13 +460,13 @@ int main(int, char* []) {
         Settings::instance().evaluationDate() = today;
         bondSettlementDate = calendar.advance(today, bondSettlementDays*Days);
 
-        boost::shared_ptr<YieldTermStructure> ts00 (
+        ext::shared_ptr<YieldTermStructure> ts00 (
               new PiecewiseYieldCurve<Discount,LogLinear>(curveSettlementDays,
                                                           calendar,
                                                           instrumentsB,
                                                           dc));
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts11 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts11 (
                   new FittedBondDiscountCurve(curveSettlementDays,
                                               calendar,
                                               instrumentsA,
@@ -459,7 +478,7 @@ int main(int, char* []) {
         printOutput("(a) exponential splines", ts11);
 
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts22 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts22 (
                     new FittedBondDiscountCurve(curveSettlementDays,
                                                 calendar,
                                                 instrumentsA,
@@ -471,7 +490,7 @@ int main(int, char* []) {
         printOutput("(b) simple polynomial", ts22);
 
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts33 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts33 (
                         new FittedBondDiscountCurve(curveSettlementDays,
                                                     calendar,
                                                     instrumentsA,
@@ -483,7 +502,7 @@ int main(int, char* []) {
         printOutput("(c) Nelson-Siegel", ts33);
 
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts44 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts44 (
                        new FittedBondDiscountCurve(curveSettlementDays,
                                                    calendar,
                                                    instrumentsA,
@@ -494,7 +513,7 @@ int main(int, char* []) {
 
         printOutput("(d) cubic B-splines", ts44);
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts55 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts55 (
                        new FittedBondDiscountCurve(curveSettlementDays,
                                                    calendar,
                                                    instrumentsA,
@@ -505,7 +524,7 @@ int main(int, char* []) {
 
         printOutput("(e) Svensson", ts55);
 
-        boost::shared_ptr<FittedBondDiscountCurve> ts66 (
+        ext::shared_ptr<FittedBondDiscountCurve> ts66 (
                         new FittedBondDiscountCurve(curveSettlementDays,
                                                     calendar,
                                                     instrumentsA,
@@ -516,6 +535,17 @@ int main(int, char* []) {
 
         printOutput("(f) Nelson-Siegel spreaded", ts66);
 
+        ext::shared_ptr<FittedBondDiscountCurve> ts77(
+                        new FittedBondDiscountCurve(curveSettlementDays, 
+                                                    calendar, 
+                                                    instrumentsA, 
+                                                    dc, 
+                                                    exponentialSplinesFixed, 
+                                                    tolerance, 
+                                                    max));
+
+        printOutput("(g) exponential, fixed kappa", ts77);
+
         cout << setw(6) << "tenor" << " | "
              << setw(6) << "coupon" << " | "
              << setw(6) << "bstrap" << " | "
@@ -524,11 +554,12 @@ int main(int, char* []) {
              << setw(6) << "(c)" << " | "
              << setw(6) << "(d)" << " | "
              << setw(6) << "(e)" << " | "
-             << setw(6) << "(f)" << endl;
+             << setw(6) << "(f)" << " | "
+             << setw(6) << "(g)" << endl;
 
         for (Size i=0; i<instrumentsA.size(); i++) {
 
-            std::vector<boost::shared_ptr<CashFlow> > cfs =
+            std::vector<ext::shared_ptr<CashFlow> > cfs =
                 instrumentsA[i]->bond()->cashflows();
 
             Size cfSize = instrumentsA[i]->bond()->cashflows().size();
@@ -567,7 +598,10 @@ int main(int, char* []) {
                  << 100.*parRate(*ts55,keyDates,dc) << " | "
                  // Nelson-Siegel Spreaded
                  << setw(6) << fixed << setprecision(3)
-                 << 100.*parRate(*ts66,keyDates,dc) << endl;
+                 << 100.*parRate(*ts66,keyDates,dc) << " | "
+                 // exponential, fixed kappa
+                 << setw(6) << fixed << setprecision(3) 
+                 << 100. *parRate(*ts77, keyDates, dc) << endl;
         }
 
 
@@ -606,11 +640,12 @@ int main(int, char* []) {
              << setw(6) << "(c)" << " | "
              << setw(6) << "(d)" << " | "
              << setw(6) << "(e)" << " | "
-             << setw(6) << "(f)" << endl;
+             << setw(6) << "(f)" << " | "
+             << setw(6) << "(g)" << endl;
 
         for (Size i=0; i<instrumentsA.size(); i++) {
 
-            std::vector<boost::shared_ptr<CashFlow> > cfs =
+            std::vector<ext::shared_ptr<CashFlow> > cfs =
                 instrumentsA[i]->bond()->cashflows();
 
             Size cfSize = instrumentsA[i]->bond()->cashflows().size();
@@ -649,22 +684,11 @@ int main(int, char* []) {
                  << 100.*parRate(*ts55,keyDates,dc) << " | "
                  // Nelson-Siegel Spreaded
                  << setw(6) << fixed << setprecision(3)
-                 << 100.*parRate(*ts66,keyDates,dc) << endl;
+                 << 100.*parRate(*ts66,keyDates,dc) << " | "
+                 // exponential spline, fixed kappa
+                 << setw(6) << fixed << setprecision(3) 
+                 << 100. *parRate(*ts77, keyDates, dc) << endl;
         }
-
-
-        double seconds = timer.elapsed();
-        Integer hours = int(seconds/3600);
-        seconds -= hours * 3600;
-        Integer minutes = int(seconds/60);
-        seconds -= minutes * 60;
-        std::cout << " \nRun completed in ";
-        if (hours > 0)
-            std::cout << hours << " h ";
-        if (hours > 0 || minutes > 0)
-            std::cout << minutes << " m ";
-        std::cout << std::fixed << std::setprecision(0)
-                  << seconds << " s\n" << std::endl;
 
         return 0;
 

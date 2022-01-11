@@ -18,20 +18,21 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-#include <ql/models/marketmodels/products/onestep/onestepoptionlets.hpp>
+#include <ql/auto_ptr.hpp>
 #include <ql/models/marketmodels/curvestate.hpp>
+#include <ql/models/marketmodels/products/onestep/onestepoptionlets.hpp>
 #include <ql/models/marketmodels/utilities.hpp>
 #include <ql/payoff.hpp>
+#include <utility>
 
 namespace QuantLib {
 
-    OneStepOptionlets::OneStepOptionlets(
-                    const std::vector<Time>& rateTimes,
-                    const std::vector<Real>& accruals,
-                    const std::vector<Time>& paymentTimes,
-                    const std::vector<boost::shared_ptr<Payoff> >& payoffs)
-    : MultiProductOneStep(rateTimes), accruals_(accruals),
-      paymentTimes_(paymentTimes), payoffs_(payoffs) {
+    OneStepOptionlets::OneStepOptionlets(const std::vector<Time>& rateTimes,
+                                         std::vector<Real> accruals,
+                                         const std::vector<Time>& paymentTimes,
+                                         std::vector<ext::shared_ptr<Payoff> > payoffs)
+    : MultiProductOneStep(rateTimes), accruals_(std::move(accruals)), paymentTimes_(paymentTimes),
+      payoffs_(std::move(payoffs)) {
         checkIncreasingTimes(paymentTimes);
     }
 
@@ -55,9 +56,10 @@ namespace QuantLib {
         return true;
     }
 
-    std::auto_ptr<MarketModelMultiProduct> OneStepOptionlets::clone() const {
-        return std::auto_ptr<MarketModelMultiProduct>(
-                                                   new OneStepOptionlets(*this));
+    QL_UNIQUE_OR_AUTO_PTR<MarketModelMultiProduct>
+    OneStepOptionlets::clone() const {
+        return QL_UNIQUE_OR_AUTO_PTR<MarketModelMultiProduct>(
+                                                new OneStepOptionlets(*this));
     }
 
 }

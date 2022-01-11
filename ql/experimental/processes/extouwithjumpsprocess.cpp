@@ -21,26 +21,28 @@
     \brief Ornstein Uhlenbeck process plus exp jumps (Kluge Model)
 */
 
-#include <ql/experimental/processes/extouwithjumpsprocess.hpp>
 #include <ql/experimental/processes/extendedornsteinuhlenbeckprocess.hpp>
+#include <ql/experimental/processes/extouwithjumpsprocess.hpp>
+#include <utility>
 
 namespace QuantLib {
 
     ExtOUWithJumpsProcess::ExtOUWithJumpsProcess(
-            const boost::shared_ptr<ExtendedOrnsteinUhlenbeckProcess>& process,
-            Real Y0, Real beta, Real jumpIntensity, Real eta)
-    : Y0_(Y0), 
-      beta_(beta), 
-      jumpIntensity_(jumpIntensity), eta_(eta),
-      ouProcess_(process) { }
-            
+        ext::shared_ptr<ExtendedOrnsteinUhlenbeckProcess> process,
+        Real Y0,
+        Real beta,
+        Real jumpIntensity,
+        Real eta)
+    : Y0_(Y0), beta_(beta), jumpIntensity_(jumpIntensity), eta_(eta),
+      ouProcess_(std::move(process)) {}
+
     Size ExtOUWithJumpsProcess::size() const {
         return 2;
     }    
     Size ExtOUWithJumpsProcess::factors() const {
         return 3;
     }
-    boost::shared_ptr<ExtendedOrnsteinUhlenbeckProcess>
+    ext::shared_ptr<ExtendedOrnsteinUhlenbeckProcess>
         ExtOUWithJumpsProcess::getExtendedOrnsteinUhlenbeckProcess() const {
         return ouProcess_;
     }

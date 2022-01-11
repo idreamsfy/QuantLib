@@ -44,37 +44,36 @@ namespace QuantLib {
         enum Discretization { Euler, BSMHullWhite };
 
         HybridHestonHullWhiteProcess(
-          const boost::shared_ptr<HestonProcess> & hestonProcess,
-          const boost::shared_ptr<HullWhiteForwardProcess> & hullWhiteProcess,
+          const ext::shared_ptr<HestonProcess> & hestonProcess,
+          const ext::shared_ptr<HullWhiteForwardProcess> & hullWhiteProcess,
           Real corrEquityShortRate,
           Discretization discretization = BSMHullWhite);
 
-        Size size() const;
-        Disposable<Array> initialValues() const;
-        Disposable<Array> drift(Time t, const Array& x) const;
-        Disposable<Matrix> diffusion(Time t, const Array& x) const;
-        Disposable<Array> apply(const Array& x0, const Array& dx) const;
+        Size size() const override;
+        Disposable<Array> initialValues() const override;
+        Disposable<Array> drift(Time t, const Array& x) const override;
+        Disposable<Matrix> diffusion(Time t, const Array& x) const override;
+        Disposable<Array> apply(const Array& x0, const Array& dx) const override;
 
-        Disposable<Array> evolve(Time t0, const Array& x0,
-                                 Time dt, const Array& dw) const;
+        Disposable<Array> evolve(Time t0, const Array& x0, Time dt, const Array& dw) const override;
 
         DiscountFactor numeraire(Time t, const Array& x) const;
 
-        const boost::shared_ptr<HestonProcess>& hestonProcess() const;
-        const boost::shared_ptr<HullWhiteForwardProcess>& 
+        const ext::shared_ptr<HestonProcess>& hestonProcess() const;
+        const ext::shared_ptr<HullWhiteForwardProcess>& 
                                                     hullWhiteProcess() const;
 
         Real eta() const;
-        Time time(const Date& date) const;
+        Time time(const Date& date) const override;
         Discretization discretization() const;
-        void update();
+        void update() override;
 
       protected:
-        const boost::shared_ptr<HestonProcess> hestonProcess_;
-        const boost::shared_ptr<HullWhiteForwardProcess> hullWhiteProcess_;
+        const ext::shared_ptr<HestonProcess> hestonProcess_;
+        const ext::shared_ptr<HullWhiteForwardProcess> hullWhiteProcess_;
         
         //model is used to calculate P(t,T)
-        const boost::shared_ptr<HullWhite> hullWhiteModel_;
+        const ext::shared_ptr<HullWhite> hullWhiteModel_;
 
         const Real corrEquityShortRate_;
         const Discretization discretization_;

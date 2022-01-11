@@ -25,7 +25,9 @@
 #define quantlib_clone_hpp
 
 #include <ql/errors.hpp>
+#if !defined(QL_USE_STD_UNIQUE_PTR)
 #include <boost/scoped_ptr.hpp>
+#endif
 #include <algorithm>
 #include <memory>
 
@@ -33,24 +35,31 @@ namespace QuantLib {
 
     //! cloning proxy to an underlying object
     /*! When copied, this class will make a clone of its underlying
-        object (which must provide a <tt>clone()</tt> method returning
-        a std::auto_ptr to a newly-allocated instance.)
+        object, which must provide a <tt>clone()</tt> method returning
+        a std::auto_ptr (or a std::unique_ptr, depending on your
+        configuration) to a newly-allocated instance.
     */
     template <class T>
     class Clone {
       public:
-        Clone();
+        Clone() = default;
+        #if defined(QL_USE_STD_UNIQUE_PTR)
+        Clone(std::unique_ptr<T>&&);
+        #else
         Clone(std::auto_ptr<T>);
+        #endif
         Clone(const T&);
         Clone(const Clone<T>&);
+        Clone(Clone<T>&&) QL_NOEXCEPT;
         Clone<T>& operator=(const T&);
         Clone<T>& operator=(const Clone<T>&);
+        Clone<T>& operator=(Clone<T>&&) QL_NOEXCEPT;
         T& operator*() const;
         T* operator->() const;
         bool empty() const;
         void swap(Clone<T>& t);
       private:
-        boost::scoped_ptr<T> ptr_;
+        std::unique_ptr<T> ptr_;
     };
 
     /*! \relates Clone */
@@ -60,12 +69,15 @@ namespace QuantLib {
 
     // inline definitions
 
+    #if defined(QL_USE_STD_UNIQUE_PTR)
     template <class T>
-    inline Clone<T>::Clone() {}
-
+    inline Clone<T>::Clone(std::unique_ptr<T>&& p)
+    : ptr_(std::move(p)) {}
+    #else
     template <class T>
     inline Clone<T>::Clone(std::auto_ptr<T> p)
-    : ptr_(p) {}
+    : ptr_(std::move(p)) {}
+    #endif
 
     template <class T>
     inline Clone<T>::Clone(const T& t)
@@ -73,17 +85,32 @@ namespace QuantLib {
 
     template <class T>
     inline Clone<T>::Clone(const Clone<T>& t)
-    : ptr_(t.empty() ? (T*)(0) : t->clone().release()) {}
+    : ptr_(t.empty() ? (T*)nullptr : t->clone().release()) {}
+
+    template <class T>
+    inline Clone<T>::Clone(Clone<T>&& t) QL_NOEXCEPT {
+        swap(t);
+    }
 
     template <class T>
     inline Clone<T>& Clone<T>::operator=(const T& t) {
+        #if defined(QL_USE_STD_UNIQUE_PTR)
+        ptr_ = t.clone();
+        #else
         ptr_.reset(t.clone().release());
+        #endif
         return *this;
     }
 
     template <class T>
     inline Clone<T>& Clone<T>::operator=(const Clone<T>& t) {
-        ptr_.reset(t.empty() ? (T*)(0) : t->clone().release());
+        ptr_.reset(t.empty() ? (T*)nullptr : t->clone().release());
+        return *this;
+    }
+
+    template <class T>
+    inline Clone<T>& Clone<T>::operator=(Clone<T>&& t) QL_NOEXCEPT {
+        swap(t);
         return *this;
     }
 

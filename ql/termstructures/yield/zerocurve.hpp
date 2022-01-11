@@ -71,7 +71,7 @@ namespace QuantLib {
             Frequency frequency = Annual);
         //! \name TermStructure interface
         //@{
-        Date maxDate() const;
+        Date maxDate() const override;
         //@}
         //! \name other inspectors
         //@{
@@ -81,11 +81,10 @@ namespace QuantLib {
         const std::vector<Rate>& zeroRates() const;
         std::vector<std::pair<Date, Real> > nodes() const;
         //@}
+
       protected:
-        InterpolatedZeroCurve(
+        explicit InterpolatedZeroCurve(
             const DayCounter&,
-            const std::vector<Handle<Quote> >& jumps = std::vector<Handle<Quote> >(),
-            const std::vector<Date>& jumpDates = std::vector<Date>(),
             const Interpolator& interpolator = Interpolator());
         InterpolatedZeroCurve(
             const Date& referenceDate,
@@ -100,9 +99,10 @@ namespace QuantLib {
             const std::vector<Handle<Quote> >& jumps = std::vector<Handle<Quote> >(),
             const std::vector<Date>& jumpDates = std::vector<Date>(),
             const Interpolator& interpolator = Interpolator());
+
         //! \name ZeroYieldStructure implementation
         //@{
-        Rate zeroYieldImpl(Time t) const;
+        Rate zeroYieldImpl(Time t) const override;
         //@}
         mutable std::vector<Date> dates_;
       private:
@@ -173,11 +173,8 @@ namespace QuantLib {
     template <class T>
     InterpolatedZeroCurve<T>::InterpolatedZeroCurve(
                                     const DayCounter& dayCounter,
-                                    const std::vector<Handle<Quote> >& jumps,
-                                    const std::vector<Date>& jumpDates,
                                     const T& interpolator)
-    : ZeroYieldStructure(dayCounter, jumps, jumpDates),
-      InterpolatedCurve<T>(interpolator) {}
+    : ZeroYieldStructure(dayCounter), InterpolatedCurve<T>(interpolator) {}
 
     template <class T>
     InterpolatedZeroCurve<T>::InterpolatedZeroCurve(
@@ -269,9 +266,6 @@ namespace QuantLib {
             Time dt = 1.0/365;
             InterestRate r(this->data_[0], dayCounter(), compounding, frequency);
             this->data_[0] = r.equivalentRate(Continuous, NoFrequency, dt);
-            #if !defined(QL_NEGATIVE_RATES)
-            QL_REQUIRE(this->data_[0] > 0.0, "non-positive yield");
-            #endif
         }
 
         for (Size i=1; i<dates_.size(); ++i) {
@@ -289,19 +283,6 @@ namespace QuantLib {
                 InterestRate r(this->data_[i], dayCounter(), compounding, frequency);
                 this->data_[i] = r.equivalentRate(Continuous, NoFrequency, this->times_[i]);
             }
-
-            #if !defined(QL_NEGATIVE_RATES)
-            QL_REQUIRE(this->data_[i] > 0.0, "non-positive yield");
-            // positive yields are not enough to ensure non-negative fwd rates
-            // so here's a stronger requirement
-            QL_REQUIRE(this->data_[i] * this->times_[i] -
-                this->data_[i - 1] * this->times_[i - 1] >= 0.0,
-                "negative forward rate implied by the zero yield " <<
-                io::rate(this->data_[i]) << " at " << dates_[i] <<
-                " (t=" << this->times_[i] << ") after the zero yield " <<
-                io::rate(this->data_[i - 1]) << " at " << dates_[i - 1] <<
-                " (t=" << this->times_[i - 1] << ")");
-            #endif
         }
 
         this->interpolation_ =

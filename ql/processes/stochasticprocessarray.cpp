@@ -20,11 +20,12 @@
 
 #include <ql/processes/stochasticprocessarray.hpp>
 #include <ql/math/matrixutilities/pseudosqrt.hpp>
+#include <ql/math/functional.hpp>
 
 namespace QuantLib {
 
     StochasticProcessArray::StochasticProcessArray(
-        const std::vector<boost::shared_ptr<StochasticProcess1D> >& processes,
+        const std::vector<ext::shared_ptr<StochasticProcess1D> >& processes,
         const Matrix& correlation)
     : processes_(processes),
       sqrtCorrelation_(pseudoSqrt(correlation,SalvagingAlgorithm::Spectral)) {
@@ -33,8 +34,8 @@ namespace QuantLib {
         QL_REQUIRE(correlation.rows() == processes.size(),
                    "mismatch between number of processes "
                    "and size of correlation matrix");
-        for (Size i=0; i<processes_.size(); i++)
-            registerWith(processes_[i]);
+        for (auto& processe : processes_)
+            registerWith(processe);
     }
 
     Size StochasticProcessArray::size() const {
@@ -63,7 +64,7 @@ namespace QuantLib {
             Real sigma = processes_[i]->diffusion(t, x[i]);
             std::transform(tmp.row_begin(i), tmp.row_end(i),
                            tmp.row_begin(i),
-                           std::bind2nd(std::multiplies<Real>(),sigma));
+                           multiply_by<Real>(sigma));
         }
         return tmp;
     }
@@ -85,7 +86,7 @@ namespace QuantLib {
             Real sigma = processes_[i]->stdDeviation(t0, x0[i], dt);
             std::transform(tmp.row_begin(i), tmp.row_end(i),
                            tmp.row_begin(i),
-                           std::bind2nd(std::multiplies<Real>(),sigma));
+                           multiply_by<Real>(sigma));
         }
         return tmp;
     }
@@ -119,7 +120,7 @@ namespace QuantLib {
         return processes_[0]->time(d);
     }
 
-    const boost::shared_ptr<StochasticProcess1D>&
+    const ext::shared_ptr<StochasticProcess1D>&
     StochasticProcessArray::process(Size i) const {
         return processes_[i];
     }

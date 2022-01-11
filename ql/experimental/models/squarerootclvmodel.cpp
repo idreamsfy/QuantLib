@@ -26,27 +26,23 @@
 #include <ql/math/integrals/gaussianquadratures.hpp>
 
 #include <ql/experimental/models/squarerootclvmodel.hpp>
-#include <ql/experimental/finitedifferences/gbsmrndcalculator.hpp>
+#include <ql/methods/finitedifferences/utilities/gbsmrndcalculator.hpp>
 
 #include <boost/math/distributions/non_central_chi_squared.hpp>
-#include <boost/make_shared.hpp>
 
 #include <utility>
 
 namespace QuantLib {
     SquareRootCLVModel::SquareRootCLVModel(
-        const boost::shared_ptr<GeneralizedBlackScholesProcess>& bsProcess,
-        const boost::shared_ptr<SquareRootProcess>& sqrtProcess,
-        const std::vector<Date>& maturityDates,
-        Size lagrangeOrder, Real pMax, Real pMin)
-    : pMax_         (pMax),
-      pMin_         (pMin),
-      bsProcess_    (bsProcess),
-      sqrtProcess_  (sqrtProcess),
-      maturityDates_(maturityDates),
-      lagrangeOrder_(lagrangeOrder),
-      rndCalculator_(boost::make_shared<GBSMRNDCalculator>(bsProcess)) {
-    }
+        const ext::shared_ptr<GeneralizedBlackScholesProcess>& bsProcess,
+        ext::shared_ptr<SquareRootProcess> sqrtProcess,
+        std::vector<Date> maturityDates,
+        Size lagrangeOrder,
+        Real pMax,
+        Real pMin)
+    : pMax_(pMax), pMin_(pMin), bsProcess_(bsProcess), sqrtProcess_(std::move(sqrtProcess)),
+      maturityDates_(std::move(maturityDates)), lagrangeOrder_(lagrangeOrder),
+      rndCalculator_(ext::make_shared<GBSMRNDCalculator>(bsProcess)) {}
 
     Real SquareRootCLVModel::cdf(const Date& d, Real k) const {
         return rndCalculator_->cdf(k, bsProcess_->time(d));
@@ -98,8 +94,8 @@ namespace QuantLib {
         const Real b = xMin - x.front();
         const Real a = (xMax - xMin)/(x.back() - x.front());
 
-        for (Size i=0, n=x.size(); i < n; ++i) {
-            x[i] = a*x[i] + b;
+        for (double& i : x) {
+            i = a * i + b;
         }
 
         return x;
@@ -123,26 +119,26 @@ namespace QuantLib {
         return s;
     }
 
-    boost::function<Real(Time, Real)> SquareRootCLVModel::g() const {
+    ext::function<Real(Time, Real)> SquareRootCLVModel::g() const {
         calculate();
         return g_;
     }
 
     void SquareRootCLVModel::performCalculations() const {
-        g_ = boost::function<Real(Time, Real)>(MappingFunction(*this));
+        g_ = ext::function<Real(Time, Real)>(MappingFunction(*this));
     }
 
     SquareRootCLVModel::MappingFunction::MappingFunction(
         const SquareRootCLVModel& model)
-    : s_(boost::make_shared<Matrix>(
+    : s_(ext::make_shared<Matrix>(
          model.maturityDates_.size(), model.lagrangeOrder_)),
-      x_(boost::make_shared<Matrix>(
+      x_(ext::make_shared<Matrix>(
          model.maturityDates_.size(), model.lagrangeOrder_)) {
 
         std::vector<Date> maturityDates = model.maturityDates_;
         std::sort(maturityDates.begin(), maturityDates.end());
 
-        const boost::shared_ptr<GeneralizedBlackScholesProcess>&
+        const ext::shared_ptr<GeneralizedBlackScholesProcess>&
             bsProcess = model.bsProcess_;
 
         for (Size i=0, n = maturityDates.size(); i < n; ++i) {
@@ -158,7 +154,7 @@ namespace QuantLib {
 
             interpl.insert(
                 std::make_pair(maturity,
-                    boost::make_shared<LagrangeInterpolation>(
+                    ext::make_shared<LagrangeInterpolation>(
                         x_->row_begin(i), x_->row_end(i),
                         s_->row_begin(i))));
         }
@@ -168,20 +164,20 @@ namespace QuantLib {
         const interpl_type::const_iterator ge = interpl.lower_bound(t);
 
         if (close_enough(ge->first, t)) {
-            return ge->second->operator()(x, true);
+            return (*ge->second)(x, true);
         }
 
         QL_REQUIRE(ge != interpl.end() && ge != interpl.begin(),
              "extrapolation to large or small t is not allowed");
 
         const Time t1 = ge->first;
-        const Real y1 = ge->second->operator()(x, true);
+        const Real y1 = (*ge->second)(x, true);
 
         interpl_type::const_iterator lt = ge;
         std::advance(lt, -1);
 
         const Time t0 = lt->first;
-        const Real y0 = lt->second->operator()(x, true);
+        const Real y0 = (*lt->second)(x, true);
 
         return y0 + (y1 - y0)/(t1 - t0)*(t - t0);
     }

@@ -38,9 +38,9 @@
 namespace QuantLib {
 
     FdmKlugeExtOUOp::FdmKlugeExtOUOp(
-        const boost::shared_ptr<FdmMesher>& mesher,
-        const boost::shared_ptr<KlugeExtOUProcess>& klugeOUProcess,
-        const boost::shared_ptr<YieldTermStructure>& rTS,
+        const ext::shared_ptr<FdmMesher>& mesher,
+        const ext::shared_ptr<KlugeExtOUProcess>& klugeOUProcess,
+        const ext::shared_ptr<YieldTermStructure>& rTS,
         const FdmBoundaryConditionSet& bcSet,
         Size integroIntegrationOrder)
     : mesher_ (mesher),
@@ -50,11 +50,11 @@ namespace QuantLib {
       bcSet_  (bcSet),
       klugeOp_(new FdmExtOUJumpOp(mesher, kluge_, rTS, bcSet,
                                   integroIntegrationOrder)),
-      ouOp_   (new FdmExtendedOrnsteinUhlenbackOp(
+      ouOp_   (new FdmExtendedOrnsteinUhlenbeckOp(
                   mesher, extOU_,
-                  boost::shared_ptr<YieldTermStructure>(
+                  ext::shared_ptr<YieldTermStructure>(
                       new FlatForward(rTS->referenceDate(),
-                              Handle<Quote>(boost::shared_ptr<Quote>(
+                              Handle<Quote>(ext::shared_ptr<Quote>(
                                       new SimpleQuote(0.0))),
                                       rTS->dayCounter())),
                   bcSet, 2)),
@@ -108,7 +108,6 @@ namespace QuantLib {
         return klugeOp_->solve_splitting(0, r, dt);
     }
 
-#if !defined(QL_NO_UBLAS_SUPPORT)
     Disposable<std::vector<SparseMatrix> >
     FdmKlugeExtOUOp::toMatrixDecomp() const {
         const std::vector<SparseMatrix> klugeDecomp
@@ -122,5 +121,5 @@ namespace QuantLib {
 
         return retVal;
     }
-#endif
+
 }

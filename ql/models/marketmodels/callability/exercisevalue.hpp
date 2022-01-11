@@ -34,7 +34,7 @@ namespace QuantLib {
 
     class MarketModelExerciseValue {
       public:
-        virtual ~MarketModelExerciseValue() {}
+        virtual ~MarketModelExerciseValue() = default;
         virtual Size numberOfExercises() const = 0;
         // including any time at which state should be updated
         virtual const EvolutionDescription& evolution() const = 0;
@@ -45,7 +45,11 @@ namespace QuantLib {
         virtual std::valarray<bool> isExerciseTime() const = 0;
         virtual MarketModelMultiProduct::CashFlow value(
                                                const CurveState&) const = 0;
+        #if defined(QL_USE_STD_UNIQUE_PTR)
+        virtual std::unique_ptr<MarketModelExerciseValue> clone() const = 0;
+        #else
         virtual std::auto_ptr<MarketModelExerciseValue> clone() const = 0;
+        #endif
     };
 
 }

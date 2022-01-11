@@ -35,33 +35,29 @@ namespace QuantLib {
     
     class FdmBatesOp : public FdmLinearOpComposite {
       public:
-        FdmBatesOp(
-            const boost::shared_ptr<FdmMesher>& mesher,
-            const boost::shared_ptr<BatesProcess>& batesProcess,
-            const FdmBoundaryConditionSet& bcSet,
-            Size integroIntegrationOrder,
-            const boost::shared_ptr<FdmQuantoHelper>& quantoHelper
-                                        = boost::shared_ptr<FdmQuantoHelper>());
+        FdmBatesOp(const ext::shared_ptr<FdmMesher>& mesher,
+                   const ext::shared_ptr<BatesProcess>& batesProcess,
+                   FdmBoundaryConditionSet bcSet,
+                   Size integroIntegrationOrder,
+                   const ext::shared_ptr<FdmQuantoHelper>& quantoHelper =
+                       ext::shared_ptr<FdmQuantoHelper>());
 
-        Size size() const;
-        void setTime(Time t1, Time t2);
+        Size size() const override;
+        void setTime(Time t1, Time t2) override;
 
-        Disposable<Array> apply(const Array& r) const;
-        Disposable<Array> apply_mixed(const Array& r) const;
+        Disposable<Array> apply(const Array& r) const override;
+        Disposable<Array> apply_mixed(const Array& r) const override;
 
-        Disposable<Array> apply_direction(Size direction,
-                                          const Array& r) const;
-        Disposable<Array> solve_splitting(Size direction,
-                                          const Array& r, Real s) const;
-        Disposable<Array> preconditioner(const Array& r, Real s) const;
+        Disposable<Array> apply_direction(Size direction, const Array& r) const override;
+        Disposable<Array> solve_splitting(Size direction, const Array& r, Real s) const override;
+        Disposable<Array> preconditioner(const Array& r, Real s) const override;
 
-#if !defined(QL_NO_UBLAS_SUPPORT)
-        Disposable<std::vector<SparseMatrix> > toMatrixDecomp() const;
-#endif
+        Disposable<std::vector<SparseMatrix> > toMatrixDecomp() const override;
+
       private:
         class IntegroIntegrand {
           public:
-            IntegroIntegrand(const boost::shared_ptr<LinearInterpolation>& i,
+            IntegroIntegrand(const ext::shared_ptr<LinearInterpolation>& i,
                              const FdmBoundaryConditionSet& bcSet,
                              Real x, Real delta, Real nu);
             Real operator()(Real y) const;
@@ -69,7 +65,7 @@ namespace QuantLib {
           private:
             const Real x_, delta_, nu_;
             const FdmBoundaryConditionSet& bcSet_;
-            const boost::shared_ptr<LinearInterpolation>& interpl_;
+            const ext::shared_ptr<LinearInterpolation>& interpl_;
         };
           
         Disposable<Array> integro(const Array& r) const;  
@@ -79,9 +75,9 @@ namespace QuantLib {
         const Real lambda_, delta_, nu_, m_;
         GaussHermiteIntegration gaussHermiteIntegration_;
         
-        const boost::shared_ptr<FdmMesher> mesher_;
+        const ext::shared_ptr<FdmMesher> mesher_;
         const FdmBoundaryConditionSet bcSet_;
-        const boost::shared_ptr<FdmHestonOp> hestonOp_;
+        const ext::shared_ptr<FdmHestonOp> hestonOp_;
     };
 
     // inline

@@ -34,19 +34,11 @@ typedef boost::mt19937 base_generator_type;
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/lognormal_distribution.hpp>
 #include <boost/random/cauchy_distribution.hpp>
-#if BOOST_VERSION >= 104700
 #include <boost/random/uniform_real_distribution.hpp>
 typedef boost::random::uniform_real_distribution<double> uniform;
 typedef boost::random::normal_distribution<> normal_random;
 typedef boost::random::lognormal_distribution<> lognormal_random;
 typedef boost::random::cauchy_distribution<> cauchy_random;
-#else
-#include <boost/random/uniform_real.hpp>
-typedef boost::uniform_real<> uniform;
-typedef boost::normal_distribution<> normal_random;
-typedef boost::lognormal_distribution<> lognormal_random;
-typedef boost::cauchy_distribution<> cauchy_random;
-#endif
 
 #include <boost/random/variate_generator.hpp>
 typedef boost::variate_generator<base_generator_type&, uniform > uniform_variate;
@@ -54,8 +46,9 @@ typedef boost::variate_generator<base_generator_type, normal_random > normal_var
 typedef boost::variate_generator<base_generator_type&, lognormal_random > lognormal_variate;
 typedef boost::variate_generator<base_generator_type&, cauchy_random > cauchy_variate;
 
-#include <cmath> //for log
 #include <algorithm> //for std::max
+#include <cmath>     //for log
+#include <utility>
 #include <vector>
 
 namespace QuantLib
@@ -67,12 +60,18 @@ namespace QuantLib
     class SamplerLogNormal
     {
     public:
-        SamplerLogNormal(unsigned long seed = SeedGenerator::instance().get()) :
+        explicit SamplerLogNormal(unsigned long seed = SeedGenerator::instance().get()) :
             generator_(seed),
             distribution_(0.0, 1.0), gaussian_(generator_, distribution_) {};
         SamplerLogNormal(const SamplerLogNormal& sampler) : generator_(sampler.gaussian_.engine()),
             distribution_(sampler.gaussian_.distribution()),
             gaussian_(generator_, distribution_) {};
+        SamplerLogNormal& operator=(const SamplerLogNormal& sampler) {
+            generator_ = sampler.gaussian_.engine();
+            distribution_ = sampler.gaussian_.distribution();
+            gaussian_ = normal_variate(generator_, distribution_);
+            return *this;
+        }
 
         inline void operator()(Array &newPoint, const Array &currentPoint, const Array &temp) const {
             QL_REQUIRE(newPoint.size() == currentPoint.size(), "Incompatible input");
@@ -93,12 +92,18 @@ namespace QuantLib
     class SamplerGaussian
     {
     public:
-        SamplerGaussian(unsigned long seed = SeedGenerator::instance().get()) :
+        explicit SamplerGaussian(unsigned long seed = SeedGenerator::instance().get()) :
             generator_(seed),
             distribution_(0.0, 1.0), gaussian_(generator_, distribution_) {};
         SamplerGaussian(const SamplerGaussian& sampler) : generator_(sampler.gaussian_.engine()),
             distribution_(sampler.gaussian_.distribution()),
             gaussian_(generator_, distribution_) {};
+        SamplerGaussian& operator=(const SamplerGaussian& sampler) {
+            generator_ = sampler.gaussian_.engine();
+            distribution_ = sampler.gaussian_.distribution();
+            gaussian_ = normal_variate(generator_, distribution_);
+            return *this;
+        }
 
         inline void operator()(Array &newPoint, const Array &currentPoint, const Array &temp) const {
             QL_REQUIRE(newPoint.size() == currentPoint.size(), "Incompatible input");
@@ -120,16 +125,22 @@ namespace QuantLib
     class SamplerRingGaussian
     {
     public:
-        SamplerRingGaussian(const Array& lower, const Array& upper, 
-				unsigned long seed = SeedGenerator::instance().get()) :
-            generator_(seed), distribution_(0.0, 1.0), 
-            gaussian_(generator_, distribution_),
-            lower_(lower), upper_(upper) {};
-        SamplerRingGaussian(const SamplerRingGaussian& sampler) : 
-			generator_(sampler.gaussian_.engine()),
-            distribution_(sampler.gaussian_.distribution()),
-            gaussian_(generator_, distribution_),
-            lower_(sampler.lower_), upper_(sampler.upper_) {};
+      SamplerRingGaussian(Array lower,
+                          Array upper,
+                          unsigned long seed = SeedGenerator::instance().get())
+      : generator_(seed), distribution_(0.0, 1.0), gaussian_(generator_, distribution_),
+        lower_(std::move(lower)), upper_(std::move(upper)){};
+      SamplerRingGaussian(const SamplerRingGaussian& sampler)
+      : generator_(sampler.gaussian_.engine()), distribution_(sampler.gaussian_.distribution()),
+        gaussian_(generator_, distribution_), lower_(sampler.lower_), upper_(sampler.upper_){};
+      SamplerRingGaussian& operator=(const SamplerRingGaussian& sampler) {
+          generator_ = sampler.gaussian_.engine();
+          distribution_ = sampler.gaussian_.distribution();
+          gaussian_ = normal_variate(generator_, distribution_);
+          lower_ = sampler.lower_;
+          upper_ = sampler.upper_;
+          return *this;
+        }
 
         inline void operator()(Array &newPoint, const Array &currentPoint, const Array &temp) const {
             QL_REQUIRE(newPoint.size() == currentPoint.size(), "Incompatible input");
@@ -160,16 +171,22 @@ namespace QuantLib
     class SamplerMirrorGaussian
     {
     public:
-        SamplerMirrorGaussian(const Array& lower, const Array& upper, 
-				unsigned long seed = SeedGenerator::instance().get()) :
-            generator_(seed), distribution_(0.0, 1.0), 
-            gaussian_(generator_, distribution_),
-            lower_(lower), upper_(upper) {};
-        SamplerMirrorGaussian(const SamplerMirrorGaussian& sampler) : 
-			generator_(sampler.gaussian_.engine()),
-            distribution_(sampler.gaussian_.distribution()),
-            gaussian_(generator_, distribution_),
-            lower_(sampler.lower_), upper_(sampler.upper_) {};
+      SamplerMirrorGaussian(Array lower,
+                            Array upper,
+                            unsigned long seed = SeedGenerator::instance().get())
+      : generator_(seed), distribution_(0.0, 1.0), gaussian_(generator_, distribution_),
+        lower_(std::move(lower)), upper_(std::move(upper)){};
+      SamplerMirrorGaussian(const SamplerMirrorGaussian& sampler)
+      : generator_(sampler.gaussian_.engine()), distribution_(sampler.gaussian_.distribution()),
+        gaussian_(generator_, distribution_), lower_(sampler.lower_), upper_(sampler.upper_){};
+      SamplerMirrorGaussian& operator=(const SamplerMirrorGaussian& sampler) {
+          generator_ = sampler.gaussian_.engine();
+          distribution_ = sampler.gaussian_.distribution();
+          gaussian_ = normal_variate(generator_, distribution_);
+          lower_ = sampler.lower_;
+          upper_ = sampler.upper_;
+          return *this;
+        }
 
         inline void operator()(Array &newPoint, const Array &currentPoint, const Array &temp) const {
             QL_REQUIRE(newPoint.size() == currentPoint.size(), "Incompatible input");
@@ -201,7 +218,7 @@ namespace QuantLib
     class SamplerCauchy
     {
     public:
-        SamplerCauchy(unsigned long seed = SeedGenerator::instance().get()) :
+        explicit SamplerCauchy(unsigned long seed = SeedGenerator::instance().get()) :
             generator_(seed),
             distribution_(0.0, 1.0), cauchy_(generator_, distribution_) {};
         SamplerCauchy(const SamplerCauchy& sampler) : generator_(sampler.cauchy_.engine()),
@@ -227,12 +244,13 @@ namespace QuantLib
     class SamplerVeryFastAnnealing
     {
     public:
-        SamplerVeryFastAnnealing(const Array &lower, const Array &upper, unsigned long seed = SeedGenerator::instance().get()) :
-            lower_(lower), upper_(upper),
-            generator_(seed),
-            uniform_(generator_, distribution_) {
-            QL_REQUIRE(lower_.size() == upper_.size(), "Incompatible input");
-        };
+      SamplerVeryFastAnnealing(Array lower,
+                               Array upper,
+                               unsigned long seed = SeedGenerator::instance().get())
+      : lower_(std::move(lower)), upper_(std::move(upper)), generator_(seed),
+        uniform_(generator_, distribution_) {
+          QL_REQUIRE(lower_.size() == upper_.size(), "Incompatible input");
+      };
         SamplerVeryFastAnnealing(const SamplerVeryFastAnnealing& sampler) :
             lower_(sampler.lower_), upper_(sampler.upper_),
             generator_(sampler.uniform_.engine()), distribution_(sampler.uniform_.distribution()),
@@ -248,7 +266,7 @@ namespace QuantLib
                 newPoint[i] = lower_[i] - 1.0;
                 while (newPoint[i] < lower_[i] || newPoint[i] > upper_[i]) {
                     Real draw = uniform_();
-                    Real sign = (0.5 < draw) - (draw < 0.5);
+                    Real sign = static_cast<int>(0.5 < draw) - static_cast<int>(draw < 0.5);
                     Real y = sign*temp[i] * (std::pow(1.0 + 1.0 / temp[i],
                                                       std::abs(2 * draw - 1.0)) - 1.0);
                     newPoint[i] = currentPoint[i] + y*(upper_[i] - lower_[i]);
@@ -280,7 +298,7 @@ namespace QuantLib
     */
     class ProbabilityBoltzmann {
     public:
-        ProbabilityBoltzmann(unsigned long seed = SeedGenerator::instance().get()) :
+        explicit ProbabilityBoltzmann(unsigned long seed = SeedGenerator::instance().get()) :
             generator_(seed),
             uniform_(generator_, distribution_) {};
         ProbabilityBoltzmann(const ProbabilityBoltzmann &probability) :
@@ -302,7 +320,7 @@ namespace QuantLib
     class ProbabilityBoltzmannDownhill
     {
     public:
-        ProbabilityBoltzmannDownhill(unsigned long seed = SeedGenerator::instance().get()) :
+        explicit ProbabilityBoltzmannDownhill(unsigned long seed = SeedGenerator::instance().get()) :
             generator_(seed),
             uniform_(generator_, distribution_) {};
         ProbabilityBoltzmannDownhill(const ProbabilityBoltzmannDownhill& probability) :
@@ -408,7 +426,8 @@ namespace QuantLib
     /*!    No reannealing is performed
     */
     struct ReannealingTrivial {
-        ReannealingTrivial() {};
+        ReannealingTrivial() = default;
+        ;
         inline void setProblem(Problem &P) {};
         inline void operator()(Array & steps, const Array &currentPoint,
             Real aCurrentValue, const Array & currTemp) const {};
@@ -434,7 +453,7 @@ namespace QuantLib
             functionTol_(functionTol), N_(dimension), bound_(false),
             lower_(lower), upper_(upper), initialTemp_(dimension, initialTemp),
             bounded_(dimension, 1.0) {
-            if (lower.size() > 0 && upper.size() > 0) {
+            if (!lower.empty() && !upper.empty()) {
                 QL_REQUIRE(lower.size() == N_, "Incompatible input");
                 QL_REQUIRE(upper.size() == N_, "Incompatible input");
                 bound_ = true;

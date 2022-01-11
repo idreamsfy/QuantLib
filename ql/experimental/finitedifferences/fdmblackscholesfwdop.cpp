@@ -27,8 +27,8 @@
 namespace QuantLib {
 
     FdmBlackScholesFwdOp::FdmBlackScholesFwdOp(
-        const boost::shared_ptr<FdmMesher>& mesher,
-        const boost::shared_ptr<GeneralizedBlackScholesProcess> & bsProcess,
+        const ext::shared_ptr<FdmMesher>& mesher,
+        const ext::shared_ptr<GeneralizedBlackScholesProcess> & bsProcess,
         Real strike,
         bool localVol,
         Real illegalLocalVolOverwrite,
@@ -38,7 +38,7 @@ namespace QuantLib {
       qTS_   (bsProcess->dividendYield().currentLink()),
       volTS_ (bsProcess->blackVolatility().currentLink()),
       localVol_((localVol) ? bsProcess->localVolatility().currentLink()
-                           : boost::shared_ptr<LocalVolTermStructure>()),
+                           : ext::shared_ptr<LocalVolTermStructure>()),
       x_ ((localVol) ? Array(Exp(mesher->locations(direction))) : Array()),
       dxMap_ (FirstDerivativeOp(direction, mesher)),
       dxxMap_(SecondDerivativeOp(direction, mesher)),
@@ -52,8 +52,8 @@ namespace QuantLib {
         const Rate r = rTS_->forwardRate(t1, t2, Continuous).rate();
         const Rate q = qTS_->forwardRate(t1, t2, Continuous).rate();
 
-        if (localVol_) {
-            const boost::shared_ptr<FdmLinearOpLayout> layout=mesher_->layout();
+        if (localVol_ != nullptr) {
+            const ext::shared_ptr<FdmLinearOpLayout> layout=mesher_->layout();
             const FdmLinearOpIterator endIter = layout->end();
 
             Array v(layout->size());
@@ -76,8 +76,7 @@ namespace QuantLib {
             }
             mapT_.axpyb(Array(1, 1.0), dxMap_.multR(- r + q + 0.5*v),
                         dxxMap_.multR(0.5*v), Array(1, 0.0));
-        }
-        else {
+        } else {
             const Real v
                 = volTS_->blackForwardVariance(t1, t2, strike_)/(t2-t1);
             mapT_.axpyb(Array(1, - r + q + 0.5*v), dxMap_,
@@ -86,9 +85,7 @@ namespace QuantLib {
         }
     }
 
-    Size FdmBlackScholesFwdOp::size() const {
-        return 1u;
-    }
+    Size FdmBlackScholesFwdOp::size() const { return 1U; }
 
     Disposable<Array> FdmBlackScholesFwdOp::apply(const Array& u) const {
         return mapT_.apply(u);
@@ -124,11 +121,10 @@ namespace QuantLib {
         return solve_splitting(direction_, r, dt);
     }
 
-#if !defined(QL_NO_UBLAS_SUPPORT)
     Disposable<std::vector<SparseMatrix> >
     FdmBlackScholesFwdOp::toMatrixDecomp() const {
         std::vector<SparseMatrix> retVal(1, mapT_.toMatrix());
         return retVal;
     }
-#endif
+
 }

@@ -21,30 +21,25 @@
 */
 
 #include <ql/math/functional.hpp>
-#include <ql/processes/ornsteinuhlenbeckprocess.hpp>
-#include <ql/termstructures/yieldtermstructure.hpp>
 #include <ql/methods/finitedifferences/meshers/fdmmesher.hpp>
 #include <ql/methods/finitedifferences/operators/fdmlinearoplayout.hpp>
 #include <ql/methods/finitedifferences/operators/fdmornsteinuhlenbeckop.hpp>
 #include <ql/methods/finitedifferences/operators/secondderivativeop.hpp>
+#include <ql/processes/ornsteinuhlenbeckprocess.hpp>
+#include <ql/termstructures/yieldtermstructure.hpp>
+#include <utility>
 
 namespace QuantLib {
 
-    FdmOrnsteinUhlenbackOp::FdmOrnsteinUhlenbackOp(
-            const boost::shared_ptr<FdmMesher>& mesher,
-            const boost::shared_ptr<OrnsteinUhlenbeckProcess>& process,
-            const boost::shared_ptr<YieldTermStructure>& rTS,
-            const FdmBoundaryConditionSet& bcSet,
-            Size direction)
-    : mesher_   (mesher),
-      process_  (process),
-      rTS_      (rTS),
-      bcSet_    (bcSet),
-      direction_(direction),
-      m_        (direction, mesher),
-      mapX_     (direction, mesher)  {
+    FdmOrnsteinUhlenbeckOp::FdmOrnsteinUhlenbeckOp(
+        const ext::shared_ptr<FdmMesher>& mesher,
+        ext::shared_ptr<OrnsteinUhlenbeckProcess> process,
+        ext::shared_ptr<YieldTermStructure> rTS,
+        Size direction)
+    : mesher_(mesher), process_(std::move(process)), rTS_(std::move(rTS)), direction_(direction),
+      m_(direction, mesher), mapX_(direction, mesher) {
 
-        const boost::shared_ptr<FdmLinearOpLayout> layout=mesher_->layout();
+        const ext::shared_ptr<FdmLinearOpLayout> layout=mesher_->layout();
 
         Array drift(layout->size());
         const Array x(mesher_->locations(direction));
@@ -61,28 +56,28 @@ namespace QuantLib {
                       *Array(mesher->layout()->size(), 1.0)), Array());
     }
 
-    Size FdmOrnsteinUhlenbackOp::size() const {
+    Size FdmOrnsteinUhlenbeckOp::size() const {
         return mesher_->layout()->dim().size();;
     }
 
-    void FdmOrnsteinUhlenbackOp::setTime(Time t1, Time t2) {
+    void FdmOrnsteinUhlenbeckOp::setTime(Time t1, Time t2) {
         const Rate r = rTS_->forwardRate(t1, t2, Continuous).rate();
 
         mapX_.axpyb(Array(), m_, m_, Array(1, -r));
     }
 
-    Disposable<Array> FdmOrnsteinUhlenbackOp::apply(const Array& r) const {
+    Disposable<Array> FdmOrnsteinUhlenbeckOp::apply(const Array& r) const {
         return mapX_.apply(r);
     }
 
-    Disposable<Array> FdmOrnsteinUhlenbackOp::apply_mixed(
+    Disposable<Array> FdmOrnsteinUhlenbeckOp::apply_mixed(
         const Array& r) const {
 
         Array retVal(r.size(), 0.0);
         return retVal;
     }
 
-    Disposable<Array> FdmOrnsteinUhlenbackOp::apply_direction(
+    Disposable<Array> FdmOrnsteinUhlenbeckOp::apply_direction(
         Size direction, const Array& r) const {
 
         if (direction == direction_) {
@@ -94,7 +89,7 @@ namespace QuantLib {
         }
     }
 
-    Disposable<Array> FdmOrnsteinUhlenbackOp::solve_splitting(
+    Disposable<Array> FdmOrnsteinUhlenbeckOp::solve_splitting(
         Size direction, const Array& r, Real a) const {
 
         if (direction == direction_) {
@@ -106,17 +101,15 @@ namespace QuantLib {
         }
     }
 
-    Disposable<Array> FdmOrnsteinUhlenbackOp::preconditioner(
+    Disposable<Array> FdmOrnsteinUhlenbeckOp::preconditioner(
         const Array& r, Real dt) const {
         return solve_splitting(direction_, r, dt);
     }
 
-#if !defined(QL_NO_UBLAS_SUPPORT)
     Disposable<std::vector<SparseMatrix> >
-    FdmOrnsteinUhlenbackOp::toMatrixDecomp() const {
+    FdmOrnsteinUhlenbeckOp::toMatrixDecomp() const {
         std::vector<SparseMatrix> retVal(1, mapX_.toMatrix());
         return retVal;
     }
-#endif
 
 }

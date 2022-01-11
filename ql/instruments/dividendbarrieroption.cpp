@@ -29,8 +29,8 @@ namespace QuantLib {
                         Barrier::Type barrierType,
                         Real barrier,
                         Real rebate,
-                        const boost::shared_ptr<StrikedTypePayoff>& payoff,
-                        const boost::shared_ptr<Exercise>& exercise,
+                        const ext::shared_ptr<StrikedTypePayoff>& payoff,
+                        const ext::shared_ptr<Exercise>& exercise,
                         const std::vector<Date>& dividendDates,
                         const std::vector<Real>& dividends)
     : BarrierOption(barrierType, barrier, rebate, payoff, exercise),
@@ -41,9 +41,8 @@ namespace QuantLib {
                                        PricingEngine::arguments* args) const {
         BarrierOption::setupArguments(args);
 
-        DividendBarrierOption::arguments* arguments =
-            dynamic_cast<DividendBarrierOption::arguments*>(args);
-        QL_REQUIRE(arguments != 0, "wrong engine type");
+        auto* arguments = dynamic_cast<DividendBarrierOption::arguments*>(args);
+        QL_REQUIRE(arguments != nullptr, "wrong engine type");
 
         arguments->cashFlow = cashFlow_;
     }

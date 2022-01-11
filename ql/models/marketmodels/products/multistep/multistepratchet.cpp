@@ -17,28 +17,28 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-#include <ql/models/marketmodels/products/multistep/multistepratchet.hpp>
+#include <ql/auto_ptr.hpp>
 #include <ql/models/marketmodels/curvestate.hpp>
+#include <ql/models/marketmodels/products/multistep/multistepratchet.hpp>
 #include <ql/models/marketmodels/utilities.hpp>
 #include <cmath>
+#include <utility>
 
 namespace QuantLib {
 
     MultiStepRatchet::MultiStepRatchet(const std::vector<Time>& rateTimes,
-                                 const std::vector<Real>& accruals,
-                                 const std::vector<Time>& paymentTimes,
-                                 Real gearingOfFloor,
-                                 Real gearingOfFixing,
-                                 Rate spreadOfFloor,
-                                 Rate spreadOfFixing,
-                                 Real initialFloor,
-                                 bool payer)
-    : MultiProductMultiStep(rateTimes),
-      accruals_(accruals), paymentTimes_(paymentTimes),
+                                       std::vector<Real> accruals,
+                                       const std::vector<Time>& paymentTimes,
+                                       Real gearingOfFloor,
+                                       Real gearingOfFixing,
+                                       Rate spreadOfFloor,
+                                       Rate spreadOfFixing,
+                                       Real initialFloor,
+                                       bool payer)
+    : MultiProductMultiStep(rateTimes), accruals_(std::move(accruals)), paymentTimes_(paymentTimes),
       gearingOfFloor_(gearingOfFloor), gearingOfFixing_(gearingOfFixing),
       spreadOfFloor_(spreadOfFloor), spreadOfFixing_(spreadOfFixing),
-      payer_(payer), multiplier_(payer ? 1.0 : -1.0),
-      lastIndex_(rateTimes.size()-1),
+      multiplier_(payer ? 1.0 : -1.0), lastIndex_(rateTimes.size() - 1),
       initialFloor_(initialFloor) {
         checkIncreasingTimes(paymentTimes);
     }
@@ -66,8 +66,9 @@ namespace QuantLib {
         return (currentIndex_ == lastIndex_);
     }
 
-    std::auto_ptr<MarketModelMultiProduct> MultiStepRatchet::clone() const {
-        return std::auto_ptr<MarketModelMultiProduct>(
+    QL_UNIQUE_OR_AUTO_PTR<MarketModelMultiProduct>
+    MultiStepRatchet::clone() const {
+        return QL_UNIQUE_OR_AUTO_PTR<MarketModelMultiProduct>(
                                                  new MultiStepRatchet(*this));
     }
 

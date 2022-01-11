@@ -1,3 +1,8 @@
+if (QL_ENABLE_SESSIONS OR QL_ENABLE_SINGLETON_THREAD_SAFE_INIT OR
+        QL_ENABLE_THREAD_SAFE_OBSERVER_PATTERN)
+    set(QL_EXAMPLES_LIBRARIES Boost::thread ${RT_LIBRARY})
+endif()
+
 add_subdirectory(BasketLosses)
 add_subdirectory(BermudanSwaption)
 add_subdirectory(Bonds)
@@ -14,6 +19,6 @@ add_subdirectory(GlobalOptimizer)
 add_subdirectory(LatentModel)
 add_subdirectory(MarketModels)
 add_subdirectory(MultidimIntegral)
+add_subdirectory(MulticurveBootstrapping)
 add_subdirectory(Replication)
 add_subdirectory(Repo)
-add_subdirectory(Swap)

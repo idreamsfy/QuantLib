@@ -39,15 +39,15 @@ namespace QuantLib {
     class MakeVanillaSwap {
       public:
         MakeVanillaSwap(const Period& swapTenor,
-                        const boost::shared_ptr<IborIndex>& iborIndex,
+                        const ext::shared_ptr<IborIndex>& iborIndex,
                         Rate fixedRate = Null<Rate>(),
                         const Period& forwardStart = 0*Days);
 
         operator VanillaSwap() const;
-        operator boost::shared_ptr<VanillaSwap>() const;
+        operator ext::shared_ptr<VanillaSwap>() const;
 
         MakeVanillaSwap& receiveFixed(bool flag = true);
-        MakeVanillaSwap& withType(VanillaSwap::Type type);
+        MakeVanillaSwap& withType(Swap::Type type);
         MakeVanillaSwap& withNominal(Real n);
 
         MakeVanillaSwap& withSettlementDays(Natural settlementDays);
@@ -81,10 +81,12 @@ namespace QuantLib {
         MakeVanillaSwap& withDiscountingTermStructure(
                               const Handle<YieldTermStructure>& discountCurve);
         MakeVanillaSwap& withPricingEngine(
-                              const boost::shared_ptr<PricingEngine>& engine);
+                              const ext::shared_ptr<PricingEngine>& engine);
+        MakeVanillaSwap& withIndexedCoupons(const boost::optional<bool>& b = true);
+        MakeVanillaSwap& withAtParCoupons(bool b = true);
       private:
         Period swapTenor_;
-        boost::shared_ptr<IborIndex> iborIndex_;
+        ext::shared_ptr<IborIndex> iborIndex_;
         Rate fixedRate_;
         Period forwardStart_;
 
@@ -92,7 +94,7 @@ namespace QuantLib {
         Date effectiveDate_, terminationDate_;
         Calendar fixedCalendar_, floatCalendar_;
 
-        VanillaSwap::Type type_;
+        Swap::Type type_;
         Real nominal_;
         Period fixedTenor_, floatTenor_;
         BusinessDayConvention fixedConvention_, fixedTerminationDateConvention_;
@@ -103,8 +105,9 @@ namespace QuantLib {
         Date floatFirstDate_, floatNextToLastDate_;
         Spread floatSpread_;
         DayCounter fixedDayCount_, floatDayCount_;
+        boost::optional<bool> useIndexedCoupons_;
 
-        boost::shared_ptr<PricingEngine> engine_;
+        ext::shared_ptr<PricingEngine> engine_;
     };
 
 }

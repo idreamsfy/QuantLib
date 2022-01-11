@@ -17,21 +17,22 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+#include <ql/auto_ptr.hpp>
+#include <ql/models/marketmodels/curvestate.hpp>
 #include <ql/models/marketmodels/products/multistep/multistepcoinitialswaps.hpp>
 #include <ql/models/marketmodels/utilities.hpp>
-#include <ql/models/marketmodels/curvestate.hpp>
+#include <utility>
 
 namespace QuantLib {
 
-    MultiStepCoinitialSwaps::MultiStepCoinitialSwaps(
-        const std::vector<Time>& rateTimes,
-        const std::vector<Real>& fixedAccruals,
-        const std::vector<Real>& floatingAccruals,
-        const std::vector<Time>& paymentTimes,
-        double fixedRate)
-    : MultiProductMultiStep(rateTimes),
-      fixedAccruals_(fixedAccruals), floatingAccruals_(floatingAccruals),
-      paymentTimes_(paymentTimes), fixedRate_(fixedRate) {
+    MultiStepCoinitialSwaps::MultiStepCoinitialSwaps(const std::vector<Time>& rateTimes,
+                                                     std::vector<Real> fixedAccruals,
+                                                     std::vector<Real> floatingAccruals,
+                                                     const std::vector<Time>& paymentTimes,
+                                                     double fixedRate)
+    : MultiProductMultiStep(rateTimes), fixedAccruals_(std::move(fixedAccruals)),
+      floatingAccruals_(std::move(floatingAccruals)), paymentTimes_(paymentTimes),
+      fixedRate_(fixedRate) {
         checkIncreasingTimes(paymentTimes);
 
         lastIndex_ = rateTimes.size()-1;
@@ -62,9 +63,9 @@ namespace QuantLib {
         return (currentIndex_ == lastIndex_);
     }
 
-    std::auto_ptr<MarketModelMultiProduct>
+    QL_UNIQUE_OR_AUTO_PTR<MarketModelMultiProduct>
     MultiStepCoinitialSwaps::clone() const {
-        return std::auto_ptr<MarketModelMultiProduct>(
+        return QL_UNIQUE_OR_AUTO_PTR<MarketModelMultiProduct>(
                                           new MultiStepCoinitialSwaps(*this));
     }
 

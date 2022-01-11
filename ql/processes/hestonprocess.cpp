@@ -17,42 +17,35 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
+#include <ql/math/distributions/chisquaredistribution.hpp>
+#include <ql/math/distributions/normaldistribution.hpp>
 #include <ql/math/functional.hpp>
-#include <ql/math/modifiedbessel.hpp>
-#include <ql/math/solvers1d/brent.hpp>
-#include <ql/math/integrals/segmentintegral.hpp>
 #include <ql/math/integrals/gaussianquadratures.hpp>
 #include <ql/math/integrals/gausslobattointegral.hpp>
-#include <ql/math/distributions/normaldistribution.hpp>
-#include <ql/math/distributions/chisquaredistribution.hpp>
-#include <ql/quotes/simplequote.hpp>
-#include <ql/processes/hestonprocess.hpp>
+#include <ql/math/integrals/segmentintegral.hpp>
+#include <ql/math/modifiedbessel.hpp>
+#include <ql/math/solvers1d/brent.hpp>
 #include <ql/processes/eulerdiscretization.hpp>
-#if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4))
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-#endif
-#include <boost/bind.hpp>
-#if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4))
-#pragma GCC diagnostic pop
-#endif
+#include <ql/processes/hestonprocess.hpp>
+#include <ql/quotes/simplequote.hpp>
 #include <boost/math/distributions/non_central_chi_squared.hpp>
-
 #include <complex>
+#include <utility>
 
 namespace QuantLib {
 
-    HestonProcess::HestonProcess(
-                              const Handle<YieldTermStructure>& riskFreeRate,
-                              const Handle<YieldTermStructure>& dividendYield,
-                              const Handle<Quote>& s0,
-                              Real v0, Real kappa,
-                              Real theta, Real sigma, Real rho,
-                              Discretization d)
-    : StochasticProcess(boost::shared_ptr<discretization>(
-                                                    new EulerDiscretization)),
-      riskFreeRate_(riskFreeRate), dividendYield_(dividendYield), s0_(s0),
-      v0_(v0), kappa_(kappa), theta_(theta), sigma_(sigma), rho_(rho),
+    HestonProcess::HestonProcess(Handle<YieldTermStructure> riskFreeRate,
+                                 Handle<YieldTermStructure> dividendYield,
+                                 Handle<Quote> s0,
+                                 Real v0,
+                                 Real kappa,
+                                 Real theta,
+                                 Real sigma,
+                                 Real rho,
+                                 Discretization d)
+    : StochasticProcess(ext::shared_ptr<discretization>(new EulerDiscretization)),
+      riskFreeRate_(std::move(riskFreeRate)), dividendYield_(std::move(dividendYield)),
+      s0_(std::move(s0)), v0_(v0), kappa_(kappa), theta_(theta), sigma_(sigma), rho_(rho),
       discretization_(d) {
 
         registerWith(riskFreeRate_);
@@ -191,8 +184,7 @@ namespace QuantLib {
             const Real x0    = std::log(process.s0()->value());
 
             return gaussLaguerreIntegration(
-                boost::bind(&ph, process, y,
-                            _1, nu_0, nu_t, t))
+                [&](Real u){ return ph(process, y, u, nu_0, nu_t, t); })
                 / std::sqrt(2*M_PI*(1-rho*rho)*y)
                 * std::exp(-0.5*square<Real>()(  x - x0 - a
                                                + y*(0.5-rho*kappa/sigma))
@@ -320,8 +312,7 @@ namespace QuantLib {
                 return (x < upper)
                     ? std::max(0.0, std::min(1.0,
                         gaussLaguerreIntegration(
-                            boost::bind(&ch, process, x,
-                                        _1, nu_0, nu_t, dt))))
+                            [&](Real u){ return ch(process, x, u, nu_0, nu_t, dt); })))
                     : 1.0;
               }
               case HestonProcess::BroadieKayaExactSchemeLobatto:
@@ -334,8 +325,7 @@ namespace QuantLib {
                 return (x < upper)
                     ? std::max(0.0, std::min(1.0,
                         GaussLobattoIntegral(Null<Size>(), eps)(
-                            boost::bind(&ch, process, x,
-                                        _1, nu_0, nu_t, dt),
+                            [&](Real xi){ return ch(process, x, xi, nu_0, nu_t, dt); },
                             QL_EPSILON, upper)))
                     : 1.0;
               }
@@ -399,8 +389,7 @@ namespace QuantLib {
          upper = 2.0*cornishFisherEps(*this, v0_, v, t,1e-3);
 
          return SegmentIntegral(100)(
-             boost::bind(&int_ph, *this, a, x,
-                         _1, v0_, v, t),
+               [&](Real xi){ return int_ph(*this, a, x, xi, v0_, v, t); },
                QL_EPSILON, upper)
                * boost::math::pdf(
                      boost::math::non_central_chi_squared_distribution<Real>(
@@ -542,8 +531,7 @@ namespace QuantLib {
                 std::max(0.0, CumulativeNormalDistribution()(dw[2])));
 
             const Real vds = Brent().solve(
-                boost::bind(&cdf_nu_ds_minus_x, *this, _1,
-                            nu_0, nu_t, dt, discretization_, x),
+                [&](Real xi){ return cdf_nu_ds_minus_x(*this, xi, nu_0, nu_t, dt, discretization_, x); },
                 1e-5, theta_*dt, 0.1*theta_*dt);
 
             const Real vdw
@@ -593,6 +581,6 @@ namespace QuantLib {
             std::max(0.0, CumulativeNormalDistribution()(dw)));
 
         return sigma_*sigma_*(1-std::exp(-kappa_*dt))/(4*kappa_)
-            *InverseNonCentralChiSquareDistribution(df, ncp, 100)(p);
+            *InverseNonCentralCumulativeChiSquareDistribution(df, ncp, 100)(p);
     }
 }

@@ -32,19 +32,28 @@
 
 namespace QuantLib {
 
+    /*! \deprecated Use the new finite-differences framework instead.
+                    Deprecated in version 1.22.
+    */
     template <typename baseEngine>
-    class FDAmericanCondition : public baseEngine {
+    class QL_DEPRECATED FDAmericanCondition : public baseEngine {
       public:
         FDAmericanCondition(
-             const boost::shared_ptr<GeneralizedBlackScholesProcess>& process,
+             const ext::shared_ptr<GeneralizedBlackScholesProcess>& process,
              Size timeSteps = 100, Size gridPoints = 100,
              bool timeDependent = false)
         : baseEngine(process, timeSteps, gridPoints, timeDependent) {}
       protected:
         void initializeStepCondition() const {
+
+            QL_DEPRECATED_DISABLE_WARNING
+
             baseEngine::stepCondition_ =
-                boost::shared_ptr<StandardStepCondition>(
+                ext::shared_ptr<StandardStepCondition>(
                   new AmericanCondition(baseEngine::intrinsicValues_.values()));
+
+            QL_DEPRECATED_ENABLE_WARNING
+
         }
     };
 
@@ -52,18 +61,18 @@ namespace QuantLib {
     class FDShoutCondition : public baseEngine {
       public:
         FDShoutCondition(
-             const boost::shared_ptr<GeneralizedBlackScholesProcess>& process,
+             const ext::shared_ptr<GeneralizedBlackScholesProcess>& process,
              Size timeSteps = 100, Size gridPoints = 100,
              bool timeDependent = false)
         : baseEngine(process, timeSteps, gridPoints, timeDependent) {}
       protected:
-        void initializeStepCondition() const {
+        void initializeStepCondition() const override {
             Time residualTime = baseEngine::getResidualTime();
             Rate riskFreeRate = baseEngine::process_->riskFreeRate()
                 ->zeroRate(residualTime, Continuous);
 
             baseEngine::stepCondition_ =
-                boost::shared_ptr<StandardStepCondition>(
+                ext::shared_ptr<StandardStepCondition>(
                      new ShoutCondition(baseEngine::intrinsicValues_.values(),
                                         residualTime,
                                         riskFreeRate));

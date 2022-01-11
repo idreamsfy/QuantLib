@@ -20,7 +20,7 @@
 // ===========================================================================
 // NOTE: The following copyright notice applies to the original code,
 //
-// Copyright (C) 2002 Peter Jäckel "Monte Carlo Methods in Finance".
+// Copyright (C) 2002 Peter JÃ¤ckel "Monte Carlo Methods in Finance".
 // All rights reserved.
 //
 // Permission to use, copy, modify, and distribute this software is freely
@@ -61,7 +61,7 @@ namespace QuantLib {
             unsigned long b = PrimeNumbers::get(i);
             double f = 1.0;
             unsigned long k = sequenceCounter_+randomStart_[i];
-            while (k) {
+            while (k != 0U) {
                 f /= b;
                 h += (k%b)*f;
                 k /= b;

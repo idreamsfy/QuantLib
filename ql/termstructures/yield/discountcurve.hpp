@@ -63,7 +63,7 @@ namespace QuantLib {
             const Interpolator& interpolator);
         //! \name TermStructure interface
         //@{
-        Date maxDate() const;
+        Date maxDate() const override;
         //@}
         //! \name other inspectors
         //@{
@@ -73,11 +73,10 @@ namespace QuantLib {
         const std::vector<DiscountFactor>& discounts() const;
         std::vector<std::pair<Date, Real> > nodes() const;
         //@}
+
       protected:
-        InterpolatedDiscountCurve(
+        explicit InterpolatedDiscountCurve(
             const DayCounter&,
-            const std::vector<Handle<Quote> >& jumps = std::vector<Handle<Quote> >(),
-            const std::vector<Date>& jumpDates = std::vector<Date>(),
             const Interpolator& interpolator = Interpolator());
         InterpolatedDiscountCurve(
             const Date& referenceDate,
@@ -92,9 +91,10 @@ namespace QuantLib {
             const std::vector<Handle<Quote> >& jumps = std::vector<Handle<Quote> >(),
             const std::vector<Date>& jumpDates = std::vector<Date>(),
             const Interpolator& interpolator = Interpolator());
+
         //! \name YieldTermStructure implementation
         //@{
-        DiscountFactor discountImpl(Time) const;
+        DiscountFactor discountImpl(Time) const override;
         //@}
         mutable std::vector<Date> dates_;
       private:
@@ -171,10 +171,8 @@ namespace QuantLib {
     template <class T>
     InterpolatedDiscountCurve<T>::InterpolatedDiscountCurve(
                                     const DayCounter& dayCounter,
-                                    const std::vector<Handle<Quote> >& jumps,
-                                    const std::vector<Date>& jumpDates,
                                     const T& interpolator)
-    : YieldTermStructure(dayCounter, jumps, jumpDates),
+    : YieldTermStructure(dayCounter),
       InterpolatedCurve<T>(interpolator) {}
 
     template <class T>
@@ -265,14 +263,6 @@ namespace QuantLib {
                        "two dates correspond to the same time "
                        "under this curve's day count convention");
             QL_REQUIRE(this->data_[i] > 0.0, "negative discount");
-            #if !defined(QL_NEGATIVE_RATES)
-            QL_REQUIRE(this->data_[i] <= this->data_[i-1],
-                       "negative forward rate implied by the discount " <<
-                       this->data_[i] << " at " << dates_[i] <<
-                       " (t=" << this->times_[i] << ") after the discount " <<
-                       this->data_[i-1] << " at " << dates_[i-1] <<
-                       " (t=" << this->times_[i-1] << ")");
-            #endif
         }
 
         this->interpolation_ =

@@ -37,11 +37,10 @@ namespace QuantLib {
 
     class FdmSimple2dBSSolver : public LazyObject {
       public:
-        FdmSimple2dBSSolver(
-            const Handle<GeneralizedBlackScholesProcess>& process,
-            Real strike,
-            const FdmSolverDesc& desc,
-            const FdmSchemeDesc& schemeDesc = FdmSchemeDesc::Douglas());
+        FdmSimple2dBSSolver(Handle<GeneralizedBlackScholesProcess> process,
+                            Real strike,
+                            FdmSolverDesc desc,
+                            const FdmSchemeDesc& schemeDesc = FdmSchemeDesc::Douglas());
 
         Real valueAt(Real s, Real a) const;
         Real deltaAt(Real s, Real a, Real eps) const;
@@ -49,7 +48,7 @@ namespace QuantLib {
         Real thetaAt(Real s, Real a) const;
 
       protected:
-        void performCalculations() const;
+        void performCalculations() const override;
 
       private:
         Handle<GeneralizedBlackScholesProcess> process_;
@@ -57,7 +56,7 @@ namespace QuantLib {
         const FdmSolverDesc solverDesc_;
         const FdmSchemeDesc schemeDesc_;
 
-        mutable boost::shared_ptr<Fdm2DimSolver> solver_;
+        mutable ext::shared_ptr<Fdm2DimSolver> solver_;
     };
 }
 

@@ -37,15 +37,15 @@ namespace QuantLib {
     class MakeArithmeticAverageOIS {
       public:
         MakeArithmeticAverageOIS(const Period& swapTenor,
-                const boost::shared_ptr<OvernightIndex>& overnightIndex,
+                const ext::shared_ptr<OvernightIndex>& overnightIndex,
                 Rate fixedRate = Null<Rate>(),
                 const Period& fwdStart = 0*Days);
 
         operator ArithmeticAverageOIS() const;
-        operator boost::shared_ptr<ArithmeticAverageOIS>() const;
+        operator ext::shared_ptr<ArithmeticAverageOIS>() const;
 
         MakeArithmeticAverageOIS& receiveFixed(bool flag = true);
-        MakeArithmeticAverageOIS& withType(ArithmeticAverageOIS::Type type);
+        MakeArithmeticAverageOIS& withType(Swap::Type type);
         MakeArithmeticAverageOIS& withNominal(Real n);
 
         MakeArithmeticAverageOIS& withSettlementDays(Natural settlementDays);
@@ -64,14 +64,14 @@ namespace QuantLib {
         MakeArithmeticAverageOIS& withDiscountingTermStructure(
                   const Handle<YieldTermStructure>& discountingTermStructure);
         MakeArithmeticAverageOIS& withPricingEngine(
-                              const boost::shared_ptr<PricingEngine>& engine);
+                              const ext::shared_ptr<PricingEngine>& engine);
         MakeArithmeticAverageOIS& withArithmeticAverage(
                                        Real meanReversionSpeed = 0.03,
                                        Real volatility = 0.00, // NO convexity adjustment by default
                                        bool byApprox = false); // TRUE to use Katsumi Takada approximation
       private:
         Period swapTenor_;
-        boost::shared_ptr<OvernightIndex> overnightIndex_;
+        ext::shared_ptr<OvernightIndex> overnightIndex_;
         Rate fixedRate_;
         Period forwardStart_;
 
@@ -88,13 +88,13 @@ namespace QuantLib {
         Real mrs_;
         Real vol_;
 
-        ArithmeticAverageOIS::Type type_;
+        Swap::Type type_;
         Real nominal_;
 
         Spread overnightSpread_;
         DayCounter fixedDayCount_;
 
-        boost::shared_ptr<PricingEngine> engine_;
+        ext::shared_ptr<PricingEngine> engine_;
     };
 
 }

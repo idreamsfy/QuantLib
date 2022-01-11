@@ -27,7 +27,7 @@
 namespace QuantLib {
 
     NormalFwdRatePc::NormalFwdRatePc(
-                           const boost::shared_ptr<MarketModel>& marketModel,
+                           const ext::shared_ptr<MarketModel>& marketModel,
                            const BrownianGeneratorFactory& factory,
                            const std::vector<Size>& numeraires,
                            Size initialStep)
@@ -55,11 +55,8 @@ namespace QuantLib {
         calculators_.reserve(steps);
         for (Size j=0; j<steps; ++j) {
             const Matrix& A = marketModel_->pseudoRoot(j);
-            calculators_.push_back(
-                LMMNormalDriftCalculator(A,
-                                         marketModel->evolution().rateTaus(),
-                                         numeraires[j],
-                                         alive_[j]));
+            calculators_.emplace_back(A, marketModel->evolution().rateTaus(), numeraires[j],
+                                      alive_[j]);
             /*
             for (Size k=0; k<numberOfRates_; ++k) {
                 Real variance =

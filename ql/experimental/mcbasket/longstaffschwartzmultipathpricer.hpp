@@ -26,15 +26,8 @@
 #include <ql/methods/montecarlo/multipath.hpp>
 #include <ql/methods/montecarlo/lsmbasissystem.hpp>
 #include <ql/experimental/mcbasket/pathpayoff.hpp>
-#if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4))
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-#endif
-#include <boost/bind.hpp>
-#if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4))
-#pragma GCC diagnostic pop
-#endif
-#include <boost/function.hpp>
+#include <ql/functional.hpp>
+#include <memory>
 
 namespace QuantLib {
 
@@ -52,21 +45,19 @@ namespace QuantLib {
     */
     class LongstaffSchwartzMultiPathPricer : public PathPricer<MultiPath> {
       public:
+        LongstaffSchwartzMultiPathPricer(const ext::shared_ptr<PathPayoff>&,
+                                         const std::vector<Size>&,
+                                         std::vector<Handle<YieldTermStructure> >,
+                                         Array,
+                                         Size,
+                                         LsmBasisSystem::PolynomType);
 
-        LongstaffSchwartzMultiPathPricer(
-            const boost::shared_ptr<PathPayoff>& ,
-            const std::vector<Size> &,
-            const std::vector<Handle<YieldTermStructure> > &,
-            const Array &,
-            Size ,
-            LsmBasisSystem::PolynomType );
-
-        Real operator()(const MultiPath& multiPath) const;
+        Real operator()(const MultiPath& multiPath) const override;
         virtual void calibrate();
 
       protected:
         struct PathInfo {
-            PathInfo(Size numberOfTimes);
+            explicit PathInfo(Size numberOfTimes);
 
             Size pathLength() const;
 
@@ -79,17 +70,17 @@ namespace QuantLib {
 
         bool  calibrationPhase_;
 
-        const boost::shared_ptr<PathPayoff> payoff_;
+        const ext::shared_ptr<PathPayoff> payoff_;
 
-        boost::scoped_array<Array> coeff_;
-        boost::scoped_array<Real> lowerBounds_;
+        std::unique_ptr<Array[]> coeff_;
+        std::unique_ptr<Real[]> lowerBounds_;
 
         const std::vector<Size> timePositions_;
         const std::vector<Handle<YieldTermStructure> > forwardTermStructures_;
         const Array dF_;
 
         mutable std::vector<PathInfo> paths_;
-        const   std::vector<boost::function1<Real, Array> > v_;
+        const std::vector<ext::function<Real(Array)> > v_;
     };
 
 }

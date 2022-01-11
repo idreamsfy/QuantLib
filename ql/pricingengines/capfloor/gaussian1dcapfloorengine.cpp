@@ -25,10 +25,8 @@ namespace QuantLib {
 
     void Gaussian1dCapFloorEngine::calculate() const {
 
-        for (Size i = 0; i < arguments_.spreads.size(); i++)
-            QL_REQUIRE(arguments_.spreads[i] == 0.0,
-                       "Non zero spreads (" << arguments_.spreads[i]
-                                            << ") are not allowed.");
+        for (double spread : arguments_.spreads)
+            QL_REQUIRE(spread == 0.0, "Non zero spreads (" << spread << ") are not allowed.");
 
         Size optionlets = arguments_.startDates.size();
         std::vector<Real> values(optionlets, 0.0);
@@ -46,8 +44,8 @@ namespace QuantLib {
 
             Date valueDate = arguments_.startDates[i];
             Date paymentDate = arguments_.endDates[i];
-            boost::shared_ptr<IborIndex> iborIndex =
-                boost::dynamic_pointer_cast<IborIndex>(arguments_.indexes[i]);
+            ext::shared_ptr<IborIndex> iborIndex =
+                ext::dynamic_pointer_cast<IborIndex>(arguments_.indexes[i]);
             // if we do not find an ibor index with associated forwarding curve
             // we fall back on the model curve
 
@@ -72,7 +70,7 @@ namespace QuantLib {
 
                         for (Size j = 0; j < z.size(); j++) {
                             Real floatingLegNpv;
-                            if (iborIndex != NULL)
+                            if (iborIndex != nullptr)
                                 floatingLegNpv =
                                     arguments_.accrualTimes[i] *
                                     model_->forwardRate(fixingDate, fixingDate,
@@ -144,7 +142,7 @@ namespace QuantLib {
                     } else {
                         for (Size j = 0; j < z.size(); j++) {
                             Real floatingLegNpv;
-                            if (iborIndex != NULL)
+                            if (iborIndex != nullptr)
                                 floatingLegNpv =
                                     arguments_.accrualTimes[i] *
                                     model_->forwardRate(fixingDate, fixingDate,

@@ -36,9 +36,12 @@ namespace QuantLib {
 
         \test the correctness of the returned greeks is tested by
               reproducing numerical derivatives.
+
+        \deprecated Use FdBlackScholesShoutEngine instead.
+                    Deprecated in version 1.22.
     */
     template <template <class> class Scheme = CrankNicolson>
-    class FDShoutEngine
+    class QL_DEPRECATED FDShoutEngine
         : public FDEngineAdapter<FDShoutCondition<
                                      FDStepConditionEngine<Scheme> >,
                                  OneAssetOption::engine> {
@@ -47,7 +50,7 @@ namespace QuantLib {
                                 OneAssetOption::engine> super;
       public:
         FDShoutEngine(
-             const boost::shared_ptr<GeneralizedBlackScholesProcess>& process,
+             const ext::shared_ptr<GeneralizedBlackScholesProcess>& process,
              Size timeSteps=100, Size gridPoints=100,
              bool timeDependent = false)
         : super(process, timeSteps, gridPoints,timeDependent) {}

@@ -18,6 +18,7 @@
 */
 
 #include <ql/models/marketmodels/products/singleproductcomposite.hpp>
+#include <ql/auto_ptr.hpp>
 
 namespace QuantLib {
 
@@ -28,8 +29,8 @@ namespace QuantLib {
 
     Size SingleProductComposite::maxNumberOfCashFlowsPerProductPerStep() const {
         Size result = 0;
-        for (const_iterator i=components_.begin(); i!=components_.end(); ++i)
-            result += i->product->maxNumberOfCashFlowsPerProductPerStep();
+        for (const auto& component : components_)
+            result += component.product->maxNumberOfCashFlowsPerProductPerStep();
         return result;
     }
 
@@ -42,7 +43,7 @@ namespace QuantLib {
         bool done = true;
         Size n = 0, totalCashflows = 0;
         // for each sub-product...
-        for (iterator i=components_.begin(); i!=components_.end(); ++i, ++n) {
+        for (auto i = components_.begin(); i != components_.end(); ++i, ++n) {
             if (isInSubset_[n][currentIndex_] && !i->done) {
                 // ...make it evolve...
                 bool thisDone = i->product->nextTimeStep(currentState,
@@ -70,9 +71,9 @@ namespace QuantLib {
         return done;
     }
 
-    std::auto_ptr<MarketModelMultiProduct>
+    QL_UNIQUE_OR_AUTO_PTR<MarketModelMultiProduct>
     SingleProductComposite::clone() const {
-        return std::auto_ptr<MarketModelMultiProduct>(
+        return QL_UNIQUE_OR_AUTO_PTR<MarketModelMultiProduct>(
                                            new SingleProductComposite(*this));
     }
 
