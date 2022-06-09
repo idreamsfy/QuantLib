@@ -72,15 +72,8 @@
 #include <ql/math/matrixutilities/sparseilupreconditioner.hpp>
 #include <ql/functional.hpp>
 
-#if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4))
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-#endif
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/operation.hpp>
-#if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4))
-#pragma GCC diagnostic pop
-#endif
 
 #include <numeric>
 #include <utility>
@@ -230,7 +223,7 @@ void FdmLinearOpTest::testUniformGridMesher() {
     const Real dx2 = 95.0/(dim[1]-1);
     const Real dx3 = 10.0/(dim[2]-1);
 
-    Real tol = 100*QL_EPSILON;
+    constexpr Real tol = 100*QL_EPSILON;
     if (   std::fabs(dx1-mesher.dminus(layout->begin(),0)) > tol
         || std::fabs(dx1-mesher.dplus(layout->begin(),0)) > tol
         || std::fabs(dx2-mesher.dminus(layout->begin(),1)) > tol
@@ -1202,16 +1195,14 @@ void FdmLinearOpTest::testFdmHestonHullWhiteOp() {
 }
 
 namespace {
-    Disposable<Array> axpy(
-        const boost::numeric::ublas::compressed_matrix<Real>& A,
-        const Array& x) {
+    Array axpy(const boost::numeric::ublas::compressed_matrix<Real>& A,
+               const Array& x) {
         
         boost::numeric::ublas::vector<Real> tmpX(x.size()), y(x.size());
         std::copy(x.begin(), x.end(), tmpX.begin());
         boost::numeric::ublas::axpy_prod(A, tmpX, y);
 
-        Array retVal(y.begin(), y.end());
-        return retVal;
+        return Array(y.begin(), y.end());
     }
 
     boost::numeric::ublas::compressed_matrix<Real> createTestMatrix(
@@ -1252,11 +1243,11 @@ void FdmLinearOpTest::testBiCGstab() {
     const boost::numeric::ublas::compressed_matrix<Real> a
         = createTestMatrix(n, m, theta);
 
-    const ext::function<Disposable<Array>(const Array&)> matmult
+    const ext::function<Array(const Array&)> matmult
         = [&](const Array& _x) { return axpy(a, _x); };
 
     SparseILUPreconditioner ilu(a, 4);
-    ext::function<Disposable<Array>(const Array&)> precond
+    ext::function<Array(const Array&)> precond
         = [&](const Array& _x) { return ilu.apply(_x); };
 
     Array b(n*m);
@@ -1288,11 +1279,11 @@ void FdmLinearOpTest::testGMRES() {
     const boost::numeric::ublas::compressed_matrix<Real> a
         = createTestMatrix(n, m, theta);
 
-    const ext::function<Disposable<Array>(const Array&)> matmult
+    const ext::function<Array(const Array&)> matmult
         = [&](const Array& _x) { return axpy(a, _x); };
     
     SparseILUPreconditioner ilu(a, 4);
-    ext::function<Disposable<Array>(const Array&)> precond
+    ext::function<Array(const Array&)> precond
         = [&](const Array& _x) { return ilu.apply(_x); };
     
     Array b(n*m);
@@ -1680,7 +1671,7 @@ void FdmLinearOpTest::testLowVolatilityHighDiscreteDividendBlackScholesMesher() 
     const Real calculatedMin = std::exp(loc.front());
 
 
-    const Real relTol = 1e5*QL_EPSILON;
+    constexpr Real relTol = 1e5*QL_EPSILON;
 
     const Real maxDiff = std::fabs(calculatedMax - maximum);
     if (maxDiff > relTol*maximum) {

@@ -48,14 +48,7 @@
 #include <ql/experimental/barrieroption/analyticdoublebarrierbinaryengine.hpp>
 #include <ql/experimental/volatility/sabrvoltermstructure.hpp>
 
-#if defined(__GNUC__) && !defined(__clang__) && BOOST_VERSION > 106300
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
 #include <boost/math/distributions/non_central_chi_squared.hpp>
-#if defined(__GNUC__) && !defined(__clang__) && BOOST_VERSION > 106300
-#pragma GCC diagnostic pop
-#endif
 
 #include <set>
 #include <utility>
@@ -294,7 +287,7 @@ namespace square_root_clv_model {
             return retVal;
         }
 
-        Disposable<Array> values(const Array& params) const override {
+        Array values(const Array& params) const override {
             const Real theta = params[0];
             const Real kappa = params[1];
             const Real sigma = params[2];

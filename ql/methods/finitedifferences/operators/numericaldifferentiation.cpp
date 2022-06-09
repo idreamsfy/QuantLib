@@ -24,20 +24,13 @@
 #ifndef QL_EXTRA_SAFETY_CHECKS
 #define BOOST_DISABLE_ASSERTS 1
 #endif
-#if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4))
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-#endif
 #include <boost/multi_array.hpp>
 #include <utility>
-#if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ > 4))
-#    pragma GCC diagnostic pop
-#endif
 
 namespace QuantLib {
 
     namespace {
-        Disposable<Array> calcOffsets(
+        Array calcOffsets(
             Real h, Size n, NumericalDifferentiation::Scheme scheme) {
             QL_REQUIRE(n > 1, "number of steps must be greater than one");
 
@@ -68,7 +61,7 @@ namespace QuantLib {
         // B. Fornberg, 1998. Calculation of Weights
         //                    in Finite Difference Formulas
         // https://amath.colorado.edu/faculty/fornberg/Docs/sirev_cl.pdf
-        Disposable<Array> calcWeights(const Array& x, Size M) {
+        Array calcWeights(const Array& x, Size M) {
             const Size N = x.size();
             QL_REQUIRE(N > M, "number of points must be greater "
                                "than the order of the derivative");

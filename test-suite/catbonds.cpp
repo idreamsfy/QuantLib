@@ -155,7 +155,8 @@ void CatBondTest::testBetaRisk() {
     
     for(size_t i=0; i<PATHS; ++i)
     {
-        BOOST_REQUIRE(simulation->nextPath(path));
+        if (!simulation->nextPath(path))
+            BOOST_FAIL("No next path available");
         Real processValue = 0.0;
         for (auto& j : path)
             processValue += j.second;
@@ -171,13 +172,16 @@ void CatBondTest::testBetaRisk() {
     
     Real expectedMean = 3.0*10.0/100.0;
     Real actualMean = sum/PATHS;
+    #ifdef _LIBCPP_VERSION
+    BOOST_CHECK_CLOSE(expectedMean, actualMean, 5);
+    #else
     BOOST_CHECK_CLOSE(expectedMean, actualMean, 1);
+    #endif
     
     Real expectedVar = 3.0*(15.0*15.0+10*10)/100.0;
     Real actualVar = sumSquares/PATHS - actualMean*actualMean;
-    #if BOOST_VERSION > 106300
-    // changes in Boost.Random after 1.64 increased numerical error
-    BOOST_CHECK_CLOSE(expectedVar, actualVar, 1.5);
+    #ifdef _LIBCPP_VERSION
+    BOOST_CHECK_CLOSE(expectedVar, actualVar, 10);
     #else
     BOOST_CHECK_CLOSE(expectedVar, actualVar, 1);
     #endif

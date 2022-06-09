@@ -31,16 +31,7 @@
 #include <ql/math/distributions/poissondistribution.hpp>
 #include <ql/math/randomnumbers/stochasticcollocationinvcdf.hpp>
 #include <ql/math/comparison.hpp>
-#include <ql/math/functional.hpp>
-
-#if defined(__GNUC__) && !defined(__clang__) && BOOST_VERSION > 106300
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
 #include <boost/math/distributions/non_central_chi_squared.hpp>
-#if defined(__GNUC__) && !defined(__clang__) && BOOST_VERSION > 106300
-#pragma GCC diagnostic pop
-#endif
 
 using namespace QuantLib;
 using namespace boost::unit_test_framework;
@@ -273,9 +264,10 @@ void DistributionTest::testNormal() {
     }
 
     MaddockInverseCumulativeNormal mInvCum(average, sigma);
-    std::transform(x.begin(),x.end(), x.begin(), diff.begin(),
-    			   compose3(std::minus<Real>(),
-    				  identity<Real>(), compose(mInvCum, cum)));
+    std::transform(x.begin(), x.end(), diff.begin(),
+                   [&](Real x) {
+                       return x - mInvCum(cum(x));
+                   });
 
     e = norm(diff.begin(), diff.end(), h);
     if (e > 1.0e-7) {
