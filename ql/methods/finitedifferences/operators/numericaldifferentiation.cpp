@@ -21,10 +21,13 @@
 
 #include <ql/methods/finitedifferences/operators/numericaldifferentiation.hpp>
 
-#ifndef QL_EXTRA_SAFETY_CHECKS
-#define BOOST_DISABLE_ASSERTS 1
+#pragma push_macro("BOOST_DISABLE_ASSERTS")
+#ifndef BOOST_DISABLE_ASSERTS
+#define BOOST_DISABLE_ASSERTS
 #endif
 #include <boost/multi_array.hpp>
+#pragma pop_macro("BOOST_DISABLE_ASSERTS")
+
 #include <utility>
 
 namespace QuantLib {
@@ -78,12 +81,12 @@ namespace QuantLib {
 
                     for (Size m=0; m <= std::min(n, M); ++m) {
                         d[m][n][nu] = (x[n]*d[m][n-1][nu]
-                             - ((m > 0)? m*d[m-1][n-1][nu] : 0.0))/c3;
+                             - ((m > 0)? Real(m*d[m-1][n-1][nu]) : 0.0))/c3;
                     }
                 }
 
                 for (Size m=0; m <= M; ++m) {
-                    d[m][n][n] = c1/c2*( ((m > 0)? m*d[m-1][n-1][n-1] : 0.0) -
+                    d[m][n][n] = c1/c2*( ((m > 0)? Real(m*d[m-1][n-1][n-1]) : 0.0) -
                         x[n-1]*d[m][n-1][n-1] );
                 }
                 c1=c2;

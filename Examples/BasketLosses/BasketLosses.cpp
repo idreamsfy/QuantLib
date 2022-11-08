@@ -39,12 +39,6 @@
 using namespace std;
 using namespace QuantLib;
 
-#if defined(QL_ENABLE_SESSIONS)
-namespace QuantLib {
-    ThreadKey sessionId() { return {}; }
-}
-#endif
-
 int main(int, char* []) {
 
     try {
@@ -70,7 +64,7 @@ int main(int, char* []) {
         for(Size i=0; i<hazardRates.size(); i++)
             names.push_back(std::string("Acme") + std::to_string(i));
         std::vector<Handle<DefaultProbabilityTermStructure> > defTS;
-        for (double& hazardRate : hazardRates) {
+        for (Real& hazardRate : hazardRates) {
             defTS.emplace_back(
                 ext::make_shared<FlatHazardRate>(0, TARGET(), hazardRate, Actual365Fixed()));
             defTS.back()->enableExtrapolation();
