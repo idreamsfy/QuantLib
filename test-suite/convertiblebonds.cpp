@@ -18,7 +18,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-#include "convertiblebonds.hpp"
+#include "toplevelfixture.hpp"
 #include "utilities.hpp"
 #include <ql/instruments/bonds/convertiblebonds.hpp>
 #include <ql/instruments/bonds/zerocouponbond.hpp>
@@ -45,73 +45,71 @@
 using namespace QuantLib;
 using namespace boost::unit_test_framework;
 
-namespace convertible_bonds_test {
+BOOST_FIXTURE_TEST_SUITE(QuantLibTests, TopLevelFixture)
 
-    struct CommonVars {
-        // global data
-        Date today, issueDate, maturityDate;
-        Calendar calendar;
-        DayCounter dayCounter;
-        Frequency frequency;
-        Natural settlementDays;
+BOOST_AUTO_TEST_SUITE(ConvertibleBondTests)
 
-        RelinkableHandle<Quote> underlying;
-        RelinkableHandle<YieldTermStructure> dividendYield, riskFreeRate;
-        RelinkableHandle<BlackVolTermStructure> volatility;
-        ext::shared_ptr<BlackScholesMertonProcess> process;
+struct CommonVars {
+    // global data
+    Date today, issueDate, maturityDate;
+    Calendar calendar;
+    DayCounter dayCounter;
+    Frequency frequency;
+    Natural settlementDays;
 
-        RelinkableHandle<Quote> creditSpread;
+    RelinkableHandle<Quote> underlying;
+    RelinkableHandle<YieldTermStructure> dividendYield, riskFreeRate;
+    RelinkableHandle<BlackVolTermStructure> volatility;
+    ext::shared_ptr<BlackScholesMertonProcess> process;
 
-        CallabilitySchedule no_callability;
+    RelinkableHandle<Quote> creditSpread;
 
-        Real faceAmount, redemption, conversionRatio;
+    CallabilitySchedule no_callability;
 
-        // setup
-        CommonVars() {
-            calendar = TARGET();
+    Real faceAmount, redemption, conversionRatio;
 
-            today = calendar.adjust(Date::todaysDate());
-            Settings::instance().evaluationDate() = today;
+    // setup
+    CommonVars() {
+        calendar = TARGET();
 
-            dayCounter = Actual360();
-            frequency = Annual;
-            settlementDays = 3;
+        today = calendar.adjust(Date::todaysDate());
+        Settings::instance().evaluationDate() = today;
 
-            issueDate = calendar.advance(today,2,Days);
-            maturityDate = calendar.advance(issueDate, 10, Years);
-            // reset to avoid inconsistencies as the schedule is backwards
-            issueDate = calendar.advance(maturityDate, -10, Years);
+        dayCounter = Actual360();
+        frequency = Annual;
+        settlementDays = 3;
 
-            underlying.linkTo(ext::make_shared<SimpleQuote>(50.0));
-            dividendYield.linkTo(flatRate(today, 0.02, dayCounter));
-            riskFreeRate.linkTo(flatRate(today, 0.05, dayCounter));
-            volatility.linkTo(flatVol(today, 0.15, dayCounter));
+        issueDate = calendar.advance(today,2,Days);
+        maturityDate = calendar.advance(issueDate, 10, Years);
+        // reset to avoid inconsistencies as the schedule is backwards
+        issueDate = calendar.advance(maturityDate, -10, Years);
 
-            process = ext::make_shared<BlackScholesMertonProcess>(
+        underlying.linkTo(ext::make_shared<SimpleQuote>(50.0));
+        dividendYield.linkTo(flatRate(today, 0.02, dayCounter));
+        riskFreeRate.linkTo(flatRate(today, 0.05, dayCounter));
+        volatility.linkTo(flatVol(today, 0.15, dayCounter));
+
+        process = ext::make_shared<BlackScholesMertonProcess>(
                     underlying, dividendYield, riskFreeRate, volatility);
 
-            creditSpread.linkTo(ext::make_shared<SimpleQuote>(0.005));
+        creditSpread.linkTo(ext::make_shared<SimpleQuote>(0.005));
 
-            // it fails with 1000000
-            // faceAmount = 1000000.0;
-            faceAmount = 100.0;
-            redemption = 100.0;
-            conversionRatio = redemption/underlying->value();
-        }
-    };
-
-}
+        // it fails with 1000000
+        // faceAmount = 1000000.0;
+        faceAmount = 100.0;
+        redemption = 100.0;
+        conversionRatio = redemption/underlying->value();
+    }
+};
 
 
-void ConvertibleBondTest::testBond() {
+BOOST_AUTO_TEST_CASE(testBond) {
 
     /* when deeply out-of-the-money, the value of the convertible bond
        should equal that of the underlying plain-vanilla bond. */
 
     BOOST_TEST_MESSAGE(
        "Testing out-of-the-money convertible bonds against vanilla bonds...");
-
-    using namespace convertible_bonds_test;
 
     CommonVars vars;
 
@@ -292,15 +290,13 @@ void ConvertibleBondTest::testBond() {
     }
 }
 
-void ConvertibleBondTest::testOption() {
+BOOST_AUTO_TEST_CASE(testOption) {
 
     /* a zero-coupon convertible bond with no credit spread is
        equivalent to a call option. */
 
     BOOST_TEST_MESSAGE(
        "Testing zero-coupon convertible bonds against vanilla option...");
-
-    using namespace convertible_bonds_test;
 
     CommonVars vars;
 
@@ -354,7 +350,7 @@ void ConvertibleBondTest::testOption() {
     }
 }
 
-void ConvertibleBondTest::testRegression() {
+BOOST_AUTO_TEST_CASE(testRegression) {
 
     BOOST_TEST_MESSAGE(
        "Testing fixed-coupon convertible bond in known regression case...");
@@ -444,13 +440,6 @@ void ConvertibleBondTest::testRegression() {
     }
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 
-test_suite* ConvertibleBondTest::suite() {
-    auto* suite = BOOST_TEST_SUITE("Convertible bond tests");
-
-    suite->add(QUANTLIB_TEST_CASE(&ConvertibleBondTest::testBond));
-    suite->add(QUANTLIB_TEST_CASE(&ConvertibleBondTest::testOption));
-    suite->add(QUANTLIB_TEST_CASE(&ConvertibleBondTest::testRegression));
-
-    return suite;
-}
+BOOST_AUTO_TEST_SUITE_END()
