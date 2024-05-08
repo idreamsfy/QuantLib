@@ -4,9 +4,10 @@ jobs:
   cmake-linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup
       run: |
+        sudo rm /etc/apt/sources.list.d/microsoft-prod.list
         sudo apt update
         sudo apt install -y libboost-dev ccache ninja-build
     - name: Cache
@@ -31,9 +32,10 @@ jobs:
   cmake-linux-with-options:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup
       run: |
+        sudo rm /etc/apt/sources.list.d/microsoft-prod.list
         sudo apt update
         sudo apt install -y libboost-all-dev ccache ninja-build
     - name: Cache
@@ -56,7 +58,7 @@ jobs:
   cmake-win:
     runs-on: windows-2022
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Cache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
@@ -68,7 +70,7 @@ jobs:
         variant: sccache
     - name: Setup
       run: |
-        $Url = "https://boostorg.jfrog.io/artifactory/main/release/1.84.0/binaries/boost_1_84_0-msvc-14.3-64.exe"
+        $Url = "https://boostorg.jfrog.io/artifactory/main/release/1.85.0/binaries/boost_1_85_0-msvc-14.3-64.exe"
         (New-Object System.Net.WebClient).DownloadFile($Url, "$RUNNER_TEMP\boost.exe")
         Start-Process -Wait -FilePath "$RUNNER_TEMP\boost.exe" "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=C:\local\boost"
         $Url = "https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-win.zip"
@@ -93,7 +95,7 @@ jobs:
   cmake-win-dynamic-runtime:
     runs-on: windows-2022
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Cache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
@@ -105,7 +107,7 @@ jobs:
         variant: sccache
     - name: Setup
       run: |
-        $Url = "https://boostorg.jfrog.io/artifactory/main/release/1.84.0/binaries/boost_1_84_0-msvc-14.3-64.exe"
+        $Url = "https://boostorg.jfrog.io/artifactory/main/release/1.85.0/binaries/boost_1_85_0-msvc-14.3-64.exe"
         (New-Object System.Net.WebClient).DownloadFile($Url, "$RUNNER_TEMP\boost.exe")
         Start-Process -Wait -FilePath "$RUNNER_TEMP\boost.exe" "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=C:\local\boost"
         $Url = "https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-win.zip"
@@ -130,7 +132,7 @@ jobs:
   cmake-win-with-options:
     runs-on: windows-2022
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Cache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
@@ -142,7 +144,7 @@ jobs:
         variant: sccache
     - name: Setup
       run: |
-        $Url = "https://boostorg.jfrog.io/artifactory/main/release/1.84.0/binaries/boost_1_84_0-msvc-14.3-64.exe"
+        $Url = "https://boostorg.jfrog.io/artifactory/main/release/1.85.0/binaries/boost_1_85_0-msvc-14.3-64.exe"
         (New-Object System.Net.WebClient).DownloadFile($Url, "$RUNNER_TEMP\boost.exe")
         Start-Process -Wait -FilePath "$RUNNER_TEMP\boost.exe" "/SILENT","/SP-","/SUPPRESSMSGBOXES","/DIR=C:\local\boost"
         $Url = "https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-win.zip"
@@ -165,8 +167,10 @@ jobs:
   cmake-macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup
+      env:
+        HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       run: |
         brew install boost ccache ninja
     - name: Cache
@@ -183,7 +187,7 @@ jobs:
         cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release -DQL_COMPILE_WARNING_AS_ERROR=ON -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -GNinja -L
         cmake --build . --verbose
-        cmake --install .
+        sudo cmake --install .
     - name: Test
       run: |
-        quantlib-test-suite --log_level=message
+        DYLD_LIBRARY_PATH=/usr/local/lib quantlib-test-suite --log_level=message

@@ -173,6 +173,7 @@ set(QL_SOURCES
     experimental/math/fireflyalgorithm.cpp
     experimental/math/gaussiancopulapolicy.cpp
     experimental/math/gaussiannoncentralchisquaredpolynomial.cpp
+    experimental/math/laplaceinterpolation.cpp
     experimental/math/multidimintegrator.cpp
     experimental/math/multidimquadrature.cpp
     experimental/math/particleswarmoptimization.cpp
@@ -279,8 +280,6 @@ set(QL_SOURCES
     instruments/cpicapfloor.cpp
     instruments/cpiswap.cpp
     instruments/creditdefaultswap.cpp
-    instruments/dividendbarrieroption.cpp
-    instruments/dividendvanillaoption.cpp
     instruments/doublebarrieroption.cpp
     instruments/doublebarriertype.cpp
     instruments/equitytotalreturnswap.cpp
@@ -1232,7 +1231,6 @@ set(QL_HEADERS
     experimental/volatility/sviinterpolatedsmilesection.hpp
     experimental/volatility/sviinterpolation.hpp
     experimental/volatility/svismilesection.hpp
-    experimental/volatility/swaptionvolcube1a.hpp
     experimental/volatility/volcube.hpp
     experimental/volatility/zabr.hpp
     experimental/volatility/zabrinterpolatedsmilesection.hpp
@@ -2108,8 +2106,6 @@ set(QL_HEADERS
     termstructures/volatility/swaption/spreadedswaptionvol.hpp
     termstructures/volatility/swaption/swaptionconstantvol.hpp
     termstructures/volatility/swaption/swaptionvolcube.hpp
-    termstructures/volatility/swaption/swaptionvolcube1.hpp
-    termstructures/volatility/swaption/swaptionvolcube2.hpp
     termstructures/volatility/swaption/swaptionvoldiscrete.hpp
     termstructures/volatility/swaption/swaptionvolmatrix.hpp
     termstructures/volatility/swaption/swaptionvolstructure.hpp
