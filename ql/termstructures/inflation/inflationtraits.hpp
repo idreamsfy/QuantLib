@@ -44,10 +44,7 @@ namespace QuantLib {
 
         // start of curve data
         static Date initialDate(const ZeroInflationTermStructure* t) {
-            if (t->hasExplicitBaseDate())
-                return t->baseDate();
-            else
-                return inflationPeriod(t->referenceDate() - t->observationLag(), t->frequency()).first;
+            return t->baseDate();
         }
         // value at reference date
         static Rate initialValue(const ZeroInflationTermStructure*) {
@@ -117,14 +114,7 @@ namespace QuantLib {
 
         // start of curve data
         static Date initialDate(const YoYInflationTermStructure* t) {
-            if (t->hasExplicitBaseDate()) {
-                return t->baseDate();
-            } else if (t->indexIsInterpolated()) {
-                return t->referenceDate() - t->observationLag();
-            } else {
-                return inflationPeriod(t->referenceDate() - t->observationLag(),
-                                       t->frequency()).first;
-            }
+            return t->baseDate();
         }
 
         // value at reference date

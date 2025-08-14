@@ -22,6 +22,7 @@
 #include "utilities.hpp"
 #include <ql/instruments/overnightindexfuture.hpp>
 #include <ql/indexes/ibor/sofr.hpp>
+#include <ql/quotes/simplequote.hpp>
 #include <ql/termstructures/yield/piecewiseyieldcurve.hpp>
 #include <ql/termstructures/yield/overnightindexfutureratehelper.hpp>
 #include <iomanip>
@@ -96,19 +97,23 @@ BOOST_AUTO_TEST_CASE(testBootstrap) {
     // test curve with one of the futures
     ext::shared_ptr<OvernightIndex> sofr =
         ext::make_shared<Sofr>(Handle<YieldTermStructure>(curve));
-    OvernightIndexFuture sf(sofr, Date(20, March, 2019), Date(19, June, 2019));
+    auto convQuote = ext::make_shared<SimpleQuote>();
+    OvernightIndexFuture sf(sofr, Date(20, March, 2019), Date(19, June, 2019),
+                            Handle<Quote>(convQuote));
 
-    Real expected_price = 97.44;
     Real tolerance = 1.0e-9;
-
-    Real error = std::fabs(sf.NPV() - expected_price);
-    if (error > tolerance) {
-        BOOST_ERROR("sample futures:\n"
-                    << std::setprecision(8)
-                    << "\n estimated price: " << sf.NPV()
-                    << "\n expected price:  " << expected_price
-                    << "\n error:           " << error
-                    << "\n tolerance:       " << tolerance);
+    for (auto convAdj : {0.0, 0.1}) {
+        convQuote->setValue(convAdj);
+        Real expected_price = 100.0 * (1 - (0.0256 + convAdj));
+        Real error = std::fabs(sf.NPV() - expected_price);
+        if (error > tolerance) {
+            BOOST_ERROR("sample futures:\n"
+                        << std::setprecision(8)
+                        << "\n estimated price: " << sf.NPV()
+                        << "\n expected price:  " << expected_price
+                        << "\n error:           " << error
+                        << "\n tolerance:       " << tolerance);
+        }
     }
 }
 
@@ -117,11 +122,10 @@ BOOST_AUTO_TEST_CASE(testBootstrapWithJuneteenth) {
     BOOST_TEST_MESSAGE(
         "Testing bootstrap over SOFR futures when third Wednesday falls on Juneteenth...");
 
-    Date today = Date(27, February, 2024);
+    Date today = Date(27, June, 2024);
     Settings::instance().evaluationDate() = today;
 
     const SofrQuotes sofrQuotes[] = {
-        {Quarterly, Mar, 2024, 97.295},
         {Quarterly, Jun, 2024, 97.220},
         {Quarterly, Sep, 2024, 97.170},
         {Quarterly, Dec, 2024, 97.160},
@@ -130,6 +134,13 @@ BOOST_AUTO_TEST_CASE(testBootstrapWithJuneteenth) {
     };
 
     ext::shared_ptr<OvernightIndex> index = ext::make_shared<Sofr>();
+    index->addFixing(Date(18, June, 2024), 0.02);
+    index->addFixing(Date(20, June, 2024), 0.02);
+    index->addFixing(Date(21, June, 2024), 0.02);
+    index->addFixing(Date(24, June, 2024), 0.02);
+    index->addFixing(Date(25, June, 2024), 0.02);
+    index->addFixing(Date(26, June, 2024), 0.02);
+    index->addFixing(Date(27, June, 2024), 0.02);
 
     std::vector<ext::shared_ptr<RateHelper> > helpers;
     for (const auto& sofrQuote : sofrQuotes) {
@@ -143,9 +154,9 @@ BOOST_AUTO_TEST_CASE(testBootstrapWithJuneteenth) {
 
     ext::shared_ptr<OvernightIndex> sofr =
         ext::make_shared<Sofr>(Handle<YieldTermStructure>(curve));
-    OvernightIndexFuture sf(sofr, Date(20, March, 2024), Date(20, June, 2024));
+    OvernightIndexFuture sf(sofr, Date(19, June, 2024), Date(18, September, 2024));
 
-    Real expected_price = 97.295;
+    Real expected_price = 97.220;
     Real tolerance = 1.0e-9;
 
     Real error = std::fabs(sf.NPV() - expected_price);

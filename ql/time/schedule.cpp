@@ -256,7 +256,7 @@ namespace QuantLib {
             QL_REQUIRE(!*endOfMonth_,
                        "endOfMonth convention incompatible with " << *rule_ <<
                        " date generation rule");
-          // fall through
+            [[fallthrough]];
           case DateGeneration::Forward:
 
             if (*rule_ == DateGeneration::CDS || *rule_ == DateGeneration::CDS2015) {
@@ -376,13 +376,8 @@ namespace QuantLib {
 
         if (*endOfMonth_ && calendar_.isEndOfMonth(seed)) {
             // adjust to end of month
-            if (convention == Unadjusted) {
-                for (Size i=1; i<dates_.size()-1; ++i)
-                    dates_[i] = Date::endOfMonth(dates_[i]);
-            } else {
-                for (Size i=1; i<dates_.size()-1; ++i)
-                    dates_[i] = calendar_.endOfMonth(dates_[i]);
-            }
+            for (Size i=1; i<dates_.size()-1; ++i)
+                dates_[i] = calendar_.adjust(Date::endOfMonth(dates_[i]), convention);
         } else {
             for (Size i=1; i<dates_.size()-1; ++i)
                 dates_[i] = calendar_.adjust(dates_[i], convention);

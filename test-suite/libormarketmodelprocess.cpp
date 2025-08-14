@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(testInitialisation) {
 
         LiborForwardModelProcess process(60, index);
 
-        std::vector<Time> fixings = process.fixingTimes();
+        const std::vector<Time>& fixings = process.fixingTimes();
         for (Size i=1; i < fixings.size()-1; ++i) {
             Size ileft  = process.nextIndexReset(fixings[i]-0.000001);
             Size iright = process.nextIndexReset(fixings[i]+0.000001);
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE(testLambdaBootstrapping) {
 
     ext::shared_ptr<LiborForwardModelProcess> process = makeProcess();
 
-    Matrix covar = process->covariance(0.0, Null<Array>(), 1.0);
+    Matrix covar = process->covariance(0.0, {}, 1.0);
 
     for (Size i=0; i<9; ++i) {
         const Real calculated = std::sqrt(covar[i+1][i+1]);

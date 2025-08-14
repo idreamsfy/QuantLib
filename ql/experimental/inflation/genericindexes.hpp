@@ -58,6 +58,25 @@ namespace QuantLib {
       public:
         YYGenericCPI(Frequency frequency,
                      bool revised,
+                     const Period &lag,
+                     const Currency &ccy,
+                     const Handle<YoYInflationTermStructure>& ts = {})
+        : YoYInflationIndex("YY_CPI",
+                            GenericRegion(),
+                            revised,
+                            frequency,
+                            lag,
+                            ccy,
+                            ts) {}
+
+        QL_DEPRECATED_DISABLE_WARNING
+
+        /*! \deprecated Use the overload without the interpolated parameter.
+                        Deprecated in version 1.38.
+        */
+        [[deprecated("Use the overload without the interpolated parameter")]]
+        YYGenericCPI(Frequency frequency,
+                     bool revised,
                      bool interpolated,
                      const Period &lag,
                      const Currency &ccy,
@@ -70,34 +89,10 @@ namespace QuantLib {
                             lag,
                             ccy,
                             ts) {}
+
+        QL_DEPRECATED_ENABLE_WARNING
     };
 
-    QL_DEPRECATED_DISABLE_WARNING
-
-    //! Year-on-year GenericCPI (i.e. a ratio)
-    /*! \deprecated Pass a zero-inflation index to YoYInflationIndex instead.
-                    Deprecated in version 1.31.
-    */
-    class [[deprecated("Pass a zero-inflation index to YoYInflationIndex instead")]] YYGenericCPIr : public YoYInflationIndex {
-      public:
-        YYGenericCPIr(Frequency frequency,
-                      bool revised,
-                      bool interpolated,
-                      const Period &lag,
-                      const Currency &ccy,
-                      const Handle<YoYInflationTermStructure>& ts = {})
-        : YoYInflationIndex("YYR_CPI",
-                            GenericRegion(),
-                            revised,
-                            interpolated,
-                            true,
-                            frequency,
-                            lag,
-                            ccy,
-                            ts) {}
-    };
-
-    QL_DEPRECATED_ENABLE_WARNING
 }
 
 #endif

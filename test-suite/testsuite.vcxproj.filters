@@ -362,9 +362,6 @@
     <ClCompile Include="rounding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sampledcurve.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="schedule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -375,6 +372,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="sofrfutures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="softbarrieroption.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="solvers.cpp">
@@ -507,7 +507,7 @@
     <ClCompile Include="crosscurrencyratehelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="subperiodcoupons.cpp">
+    <ClCompile Include="multipleresetscoupons.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="zerocouponswap.cpp">

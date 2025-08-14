@@ -177,9 +177,10 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -236,9 +237,10 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -293,11 +295,12 @@
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -353,11 +356,12 @@
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -412,9 +416,10 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -469,9 +474,10 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -524,11 +530,12 @@
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -584,11 +591,12 @@
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -745,6 +753,7 @@
     <ClCompile Include="mclongstaffschwartzengine.cpp" />
     <ClCompile Include="mersennetwister.cpp" />
     <ClCompile Include="money.cpp" />
+    <ClCompile Include="multipleresetscoupons.cpp" />
     <ClCompile Include="noarbsabr.cpp" />
     <ClCompile Include="normalclvmodel.cpp" />
     <ClCompile Include="nthtodefault.cpp" />
@@ -773,16 +782,15 @@
     <ClCompile Include="riskstats.cpp" />
     <ClCompile Include="rngtraits.cpp" />
     <ClCompile Include="rounding.cpp" />
-    <ClCompile Include="sampledcurve.cpp" />
     <ClCompile Include="schedule.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="shortratemodels.cpp" />
     <ClCompile Include="sofrfutures.cpp" />
+    <ClCompile Include="softbarrieroption.cpp" />
     <ClCompile Include="solvers.cpp" />
     <ClCompile Include="spreadoption.cpp" />
     <ClCompile Include="squarerootclvmodel.cpp" />
     <ClCompile Include="stats.cpp" />
-    <ClCompile Include="subperiodcoupons.cpp" />
     <ClCompile Include="svivolatility.cpp" />
     <ClCompile Include="swap.cpp" />
     <ClCompile Include="swapforwardmappings.cpp" />

@@ -276,7 +276,7 @@ namespace QuantLib {
         for (Size i=0; i<4; i++)
             for (Size j=0; j<nOptionTenors_; j++)
                 for (Size k=0; k<nSwapTenors_; k++)
-                    privateObserver_->registerWith(parametersGuessQuotes_[j+k*nOptionTenors_][i]);
+                    privateObserver_->registerWith(parametersGuessQuotes_[j*nSwapTenors_+k][i]);
     }
 
     template<class Model> void XabrSwaptionVolatilityCube<Model>::setParameterGuess() const {
@@ -290,7 +290,7 @@ namespace QuantLib {
             for (Size j=0; j<nOptionTenors_ ; j++)
                 for (Size k=0; k<nSwapTenors_; k++) {
                     parametersGuess_.setElement(i, j, k,
-                        parametersGuessQuotes_[j+k*nOptionTenors_][i]->value());
+                        parametersGuessQuotes_[j*nSwapTenors_+k][i]->value());
                 }
         parametersGuess_.updateInterpolators();
 
@@ -866,6 +866,7 @@ namespace QuantLib {
                        << swapLengths.size() << ")");
 
         std::vector<Time> betaTimes;
+        betaTimes.reserve(beta.size());
         for (Size i = 0; i < beta.size(); i++)
             betaTimes.push_back(
                 timeFromReference(optionDateFromTenor(swapLengths[i])));
@@ -1107,6 +1108,7 @@ namespace QuantLib {
     template<class Model> std::vector<Real> XabrSwaptionVolatilityCube<Model>::Cube::operator()(
                             const Time optionTime, const Time swapLength) const {
         std::vector<Real> result;
+        result.reserve(nLayers_);
         for (Size k=0; k<nLayers_; ++k)
             result.push_back((*interpolators_[k])(optionTime, swapLength));
         return result;

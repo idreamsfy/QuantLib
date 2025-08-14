@@ -87,6 +87,7 @@ namespace QuantLib {
     */
     class Swaption : public Option {
       public:
+        enum PriceType { Spot, Forward };
         class arguments;
         class engine;
         Swaption(ext::shared_ptr<FixedVsFloatingSwap> swap,
@@ -112,14 +113,6 @@ namespace QuantLib {
         const ext::shared_ptr<FixedVsFloatingSwap>& underlying() const {
             return swap_;
         }
-        /*! \deprecated Use the Swaption::underlying method instead.
-                        Deprecated in version 1.34.
-        */
-        [[deprecated("Use the Swaption::underlying method instead")]]
-        const ext::shared_ptr<VanillaSwap>& underlyingSwap() const {
-            QL_REQUIRE(vanilla_, "underlying is not a vanilla swap");
-            return vanilla_;
-        }
         //@}
         //! implied volatility
         Volatility impliedVolatility(
@@ -131,7 +124,8 @@ namespace QuantLib {
                               Volatility minVol = 1.0e-7,
                               Volatility maxVol = 4.0,
                               VolatilityType type = ShiftedLognormal,
-                              Real displacement = 0.0) const;
+                              Real displacement = 0.0,
+                              PriceType priceType = Spot) const;
       private:
         // arguments
         ext::shared_ptr<FixedVsFloatingSwap> swap_;

@@ -55,7 +55,7 @@ namespace QuantLib {
             Time t0, Time t1, Size vGrid,
             Real v0, const HestonSLVFokkerPlanckFdmParams& params) {
 
-            std::vector<ext::tuple<Real, Real, bool> > cPoints;
+            std::vector<std::tuple<Real, Real, bool> > cPoints;
 
             const Real v0Density = params.v0Density;
             const Real upperBoundDensity = params.vUpperBoundDensity;
@@ -81,43 +81,40 @@ namespace QuantLib {
                     const Real v0Center = std::log(v0);
 
                     cPoints = {
-                        ext::make_tuple(lowerBound, lowerBoundDensity, false),
-                        ext::make_tuple(v0Center, v0Density, true),
-                        ext::make_tuple(upperBound, upperBoundDensity, false)
+                        std::make_tuple(lowerBound, lowerBoundDensity, false),
+                        std::make_tuple(v0Center, v0Density, true),
+                        std::make_tuple(upperBound, upperBoundDensity, false)
                     };
 
                     return ext::make_shared<Concentrating1dMesher>(
                         lowerBound, upperBound, vGrid, cPoints, 1e-8);
                   }
-                break;
                 case FdmSquareRootFwdOp::Plain:
                   {
                       const Real v0Center = v0;
 
                       cPoints = {
-                          ext::make_tuple(lowerBound, lowerBoundDensity, false),
-                          ext::make_tuple(v0Center, v0Density, true),
-                          ext::make_tuple(upperBound, upperBoundDensity, false)
+                          std::make_tuple(lowerBound, lowerBoundDensity, false),
+                          std::make_tuple(v0Center, v0Density, true),
+                          std::make_tuple(upperBound, upperBoundDensity, false)
                       };
 
                       return ext::make_shared<Concentrating1dMesher>(
                           lowerBound, upperBound, vGrid, cPoints, 1e-8);
                   }
-                break;
                 case FdmSquareRootFwdOp::Power:
                 {
                     const Real v0Center = v0;
 
                     cPoints = {
-                        ext::make_tuple(lowerBound, lowerBoundDensity, false),
-                        ext::make_tuple(v0Center, v0Density, true),
-                        ext::make_tuple(upperBound, upperBoundDensity, false)
+                        std::make_tuple(lowerBound, lowerBoundDensity, false),
+                        std::make_tuple(v0Center, v0Density, true),
+                        std::make_tuple(upperBound, upperBoundDensity, false)
                     };
 
                     return ext::make_shared<Concentrating1dMesher>(
                         lowerBound, upperBound, vGrid, cPoints, 1e-8);
                 }
-                break;
                 default:
                     QL_FAIL("transformation type is not implemented");
             }

@@ -75,9 +75,9 @@ cpp_files = \
     instrument.cpp \
     interestrate.cpp \
     money.cpp \
-    optional.cpp \
     position.cpp \
     prices.cpp \
+    quote.cpp \
 	rebatedexercise.cpp \
     settings.cpp \
 	stochasticprocess.cpp \
@@ -103,7 +103,7 @@ else
 
 libQuantLib_la_SOURCES = $(cpp_files)
 
-EXTRA_DIST = 
+EXTRA_DIST =
 
 endif
 
@@ -180,4 +180,3 @@ install-data-hook:
 	rm .config.hpp
 depend:
 	makedepend $(INCLUDES) -- $(CFLAGS) -- $(SOURCES)
-

@@ -43,6 +43,22 @@ namespace QuantLib {
     class YYZACPI : public YoYInflationIndex {
       public:
         explicit YYZACPI(
+            const Handle<YoYInflationTermStructure>& ts = {})
+        : YoYInflationIndex("YY_CPI",
+                            ZARegion(),
+                            false,
+                            Monthly,
+                            Period(1, Months),
+                            ZARCurrency(),
+                            ts) {}
+
+        QL_DEPRECATED_DISABLE_WARNING
+
+        /*! \deprecated Use the overload without the interpolated parameter.
+                        Deprecated in version 1.38.
+        */
+        [[deprecated("Use the overload without the interpolated parameter")]]
+        explicit YYZACPI(
             bool interpolated,
             const Handle<YoYInflationTermStructure>& ts = {})
         : YoYInflationIndex("YY_CPI",
@@ -53,32 +69,10 @@ namespace QuantLib {
                             Period(1, Months),
                             ZARCurrency(),
                             ts) {}
+
+        QL_DEPRECATED_ENABLE_WARNING
     };
 
-
-    QL_DEPRECATED_DISABLE_WARNING
-
-    //! Year-on-year South African CPI (i.e. a ratio of ZA CPI)
-    /*! \deprecated Pass the ZACPI index to YoYInflationIndex instead.
-                    Deprecated in version 1.31.
-    */
-    class [[deprecated("Pass the ZACPI index to YoYInflationIndex instead")]] YYZACPIr : public YoYInflationIndex {
-      public:
-        explicit YYZACPIr(
-            bool interpolated,
-            const Handle<YoYInflationTermStructure>& ts = {})
-        : YoYInflationIndex("YYR_CPI",
-                            ZARegion(),
-                            false,
-                            interpolated,
-                            true,
-                            Monthly,
-                            Period(1, Months),
-                            ZARCurrency(),
-                            ts) {}
-    };
-
-    QL_DEPRECATED_ENABLE_WARNING
 }
 
 

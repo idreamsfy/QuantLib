@@ -40,7 +40,7 @@ namespace QuantLib {
           public:
             explicit LinearFct(Size i) : i_(i) {}
 
-            inline Real operator()(const Container& x) const {
+            Real operator()(const Container& x) const {
                 return x[i_];
             }
 
@@ -48,44 +48,29 @@ namespace QuantLib {
             const Size i_;
        };
 
-        // 1d implementation (arithmetic types)
-        template <class xContainer, bool>
+        template <class xContainer>
         class LinearFcts {
           public:
             typedef typename xContainer::value_type ArgumentType;
-            LinearFcts (const xContainer &x, Real intercept) {
+            LinearFcts(const xContainer &x, Real intercept) {
                 if (intercept != 0.0)
-                    v.push_back([=](ArgumentType x){ return intercept; });
-                v.push_back([](ArgumentType x){ return x; });
+                    v.push_back([=](const ArgumentType&){ return intercept; });
+                if constexpr (std::is_arithmetic_v<ArgumentType>) {
+                    v.push_back([](ArgumentType x){ return x; });
+                } else {
+                    Size m = x.begin()->size();
+                    for (Size i = 0; i < m; ++i)
+                        v.push_back(LinearFct<ArgumentType>(i));
+                }
             }
 
-            const std::vector< ext::function<Real(ArgumentType)> > & fcts() {
+            const std::vector< std::function<Real(ArgumentType)> > & fcts() {
                 return v;
             }
-
           private:
-            std::vector< ext::function<Real(ArgumentType)> > v;
+            std::vector< std::function<Real(ArgumentType)> > v;
         };
 
-        // multi-dimensional implementation (container types)
-        template <class xContainer>
-        class LinearFcts<xContainer, false>  {
-          public:
-            typedef typename xContainer::value_type ArgumentType;
-            LinearFcts (const xContainer &x, Real intercept) {
-                if (intercept != 0.0)
-                    v.push_back([=](ArgumentType x){ return intercept; });
-                Size m = x.begin()->size();
-                for (Size i = 0; i < m; ++i)
-                    v.push_back(LinearFct<ArgumentType>(i));
-            }
-
-            const std::vector< ext::function<Real(ArgumentType)> > & fcts() {
-               return v;
-            }
-          private:
-            std::vector< ext::function<Real(ArgumentType)> > v;
-        };
     }
 
     class LinearRegression : public GeneralLinearLeastSquares {
@@ -105,9 +90,7 @@ namespace QuantLib {
         LinearRegression::LinearRegression(const xContainer& x, 
                                            const yContainer& y, Real intercept) 
     : GeneralLinearLeastSquares(x, y,
-          details::LinearFcts<xContainer, 
-              std::is_arithmetic<typename xContainer::value_type>::value>
-                                                        (x, intercept).fcts()) {
+          details::LinearFcts<xContainer>(x, intercept).fcts()) {
     }
 
     template <class xContainer, class yContainer, class vContainer> inline
@@ -126,7 +109,7 @@ namespace QuantLib {
         LinearLeastSquaresRegression(
             const std::vector<ArgumentType> & x,
             const std::vector<Real> &         y,
-            const std::vector<ext::function<Real(ArgumentType)> > & v)
+            const std::vector<std::function<Real(ArgumentType)> > & v)
         : GeneralLinearLeastSquares(x, y, v) {
         }
     };

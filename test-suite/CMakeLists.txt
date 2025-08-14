@@ -108,6 +108,7 @@ set(QL_TEST_SOURCES
     mclongstaffschwartzengine.cpp
     mersennetwister.cpp
     money.cpp
+    multipleresetscoupons.cpp
     noarbsabr.cpp
     normalclvmodel.cpp
     nthorderderivativeop.cpp
@@ -136,16 +137,15 @@ set(QL_TEST_SOURCES
     riskstats.cpp
     rngtraits.cpp
     rounding.cpp
-    sampledcurve.cpp
     schedule.cpp
     settings.cpp
     shortratemodels.cpp
     sofrfutures.cpp
+    softbarrieroption.cpp
     solvers.cpp
     spreadoption.cpp
     squarerootclvmodel.cpp
     stats.cpp
-    subperiodcoupons.cpp
     svivolatility.cpp
     swap.cpp
     swapforwardmappings.cpp

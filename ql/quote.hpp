@@ -28,6 +28,7 @@
 #include <ql/handle.hpp>
 #include <ql/errors.hpp>
 #include <ql/utilities/null.hpp>
+#include <variant>
 
 namespace QuantLib {
 
@@ -42,6 +43,9 @@ namespace QuantLib {
         //! returns true if the Quote holds a valid value
         virtual bool isValid() const = 0;
     };
+
+
+    Handle<Quote> handleFromVariant(const std::variant<Real, Handle<Quote>>& value);
 
 }
 

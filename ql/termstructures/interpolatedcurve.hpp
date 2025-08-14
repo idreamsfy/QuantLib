@@ -24,6 +24,7 @@
 #ifndef quantlib_interpolated_curve_hpp
 #define quantlib_interpolated_curve_hpp
 
+#include <ql/math/comparison.hpp>
 #include <ql/math/interpolation.hpp>
 #include <ql/time/date.hpp>
 #include <ql/time/daycounter.hpp>
@@ -33,7 +34,7 @@
 namespace QuantLib {
 
     //! Helper class to build interpolated term structures
-    /*! Interpolated term structures can use proected or private
+    /*! Interpolated term structures can use protected or private
         inheritance from this class to obtain the relevant data
         members and implement correct copy behavior.
     */

@@ -33,7 +33,8 @@
 namespace QuantLib {
 
     //! Zero-coupon inflation-swap bootstrap helper
-    class ZeroCouponInflationSwapHelper : public BootstrapHelper<ZeroInflationTermStructure> {
+    class ZeroCouponInflationSwapHelper
+        : public RelativeDateBootstrapHelper<ZeroInflationTermStructure> {
       public:
         ZeroCouponInflationSwapHelper(
             const Handle<Quote>& quote,
@@ -41,15 +42,35 @@ namespace QuantLib {
             const Date& maturity,
             Calendar calendar, // index may have null calendar as valid on every day
             BusinessDayConvention paymentConvention,
+            const DayCounter& dayCounter,
+            const ext::shared_ptr<ZeroInflationIndex>& zii,
+            CPI::InterpolationType observationInterpolation);
+
+        /*! \deprecated Use the overload that does not take a nominal curve.
+                        Deprecated in version 1.39.
+        */
+        [[deprecated("Use the overload that does not take a nominal curve.")]]
+        ZeroCouponInflationSwapHelper(
+            const Handle<Quote>& quote,
+            const Period& swapObsLag,
+            const Date& maturity,
+            Calendar calendar,
+            BusinessDayConvention paymentConvention,
             DayCounter dayCounter,
-            ext::shared_ptr<ZeroInflationIndex> zii,
+            const ext::shared_ptr<ZeroInflationIndex>& zii,
             CPI::InterpolationType observationInterpolation,
             Handle<YieldTermStructure> nominalTermStructure);
 
         void setTermStructure(ZeroInflationTermStructure*) override;
         Real impliedQuote() const override;
-
+        //! \name inspectors
+        //@{
+        // NOLINTNEXTLINE(cppcoreguidelines-noexcept-swap,performance-noexcept-swap)
+        ext::shared_ptr<ZeroCouponInflationSwap> swap() const { return zciis_; }
+        //@}
       protected:
+        void initializeDates() override;
+
         Period swapObsLag_;
         Date maturity_;
         Calendar calendar_;
@@ -59,33 +80,57 @@ namespace QuantLib {
         CPI::InterpolationType observationInterpolation_;
         ext::shared_ptr<ZeroCouponInflationSwap> zciis_;
         Handle<YieldTermStructure> nominalTermStructure_;
+        RelinkableHandle<ZeroInflationTermStructure> termStructureHandle_;
     };
 
 
     //! Year-on-year inflation-swap bootstrap helper
-    class YearOnYearInflationSwapHelper : public BootstrapHelper<YoYInflationTermStructure> {
+    class YearOnYearInflationSwapHelper
+        : public RelativeDateBootstrapHelper<YoYInflationTermStructure> {
       public:
         YearOnYearInflationSwapHelper(const Handle<Quote>& quote,
-                                      const Period& swapObsLag_,
+                                      const Period& swapObsLag,
                                       const Date& maturity,
                                       Calendar calendar,
                                       BusinessDayConvention paymentConvention,
                                       DayCounter dayCounter,
-                                      ext::shared_ptr<YoYInflationIndex> yii,
+                                      const ext::shared_ptr<YoYInflationIndex>& yii,
+                                      CPI::InterpolationType interpolation,
+                                      Handle<YieldTermStructure> nominalTermStructure);
+
+        /*! \deprecated Use the overload that passes an interpolation type instead.
+                        Deprecated in version 1.36.
+        */
+        [[deprecated("Use the overload that passes an interpolation type instead")]]
+        YearOnYearInflationSwapHelper(const Handle<Quote>& quote,
+                                      const Period& swapObsLag,
+                                      const Date& maturity,
+                                      Calendar calendar,
+                                      BusinessDayConvention paymentConvention,
+                                      DayCounter dayCounter,
+                                      const ext::shared_ptr<YoYInflationIndex>& yii,
                                       Handle<YieldTermStructure> nominalTermStructure);
 
         void setTermStructure(YoYInflationTermStructure*) override;
         Real impliedQuote() const override;
-
+        //! \name inspectors
+        //@{
+        // NOLINTNEXTLINE(cppcoreguidelines-noexcept-swap,performance-noexcept-swap)
+        ext::shared_ptr<YearOnYearInflationSwap> swap() const { return yyiis_; }
+        //@}
       protected:
+        void initializeDates() override;
+
         Period swapObsLag_;
         Date maturity_;
         Calendar calendar_;
         BusinessDayConvention paymentConvention_;
         DayCounter dayCounter_;
         ext::shared_ptr<YoYInflationIndex> yii_;
+        CPI::InterpolationType interpolation_;
         ext::shared_ptr<YearOnYearInflationSwap> yyiis_;
         Handle<YieldTermStructure> nominalTermStructure_;
+        RelinkableHandle<YoYInflationTermStructure> termStructureHandle_;
     };
 
 }

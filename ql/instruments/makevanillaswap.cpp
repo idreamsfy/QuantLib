@@ -42,11 +42,8 @@ namespace QuantLib {
                                      Rate fixedRate,
                                      const Period& forwardStart)
     : swapTenor_(swapTenor), iborIndex_(index), fixedRate_(fixedRate), forwardStart_(forwardStart),
-      settlementDays_(Null<Natural>()), fixedCalendar_(index->fixingCalendar()),
-      floatCalendar_(index->fixingCalendar()),
-
+      fixedCalendar_(index->fixingCalendar()), floatCalendar_(index->fixingCalendar()),
       floatTenor_(index->tenor()),
-
       floatConvention_(index->businessDayConvention()),
       floatTerminationDateConvention_(index->businessDayConvention()),
 
@@ -217,7 +214,8 @@ namespace QuantLib {
     MakeVanillaSwap&
     MakeVanillaSwap::withTerminationDate(const Date& terminationDate) {
         terminationDate_ = terminationDate;
-        swapTenor_ = Period();
+        if (terminationDate != Date())
+            swapTenor_ = Period();
         return *this;
     }
 

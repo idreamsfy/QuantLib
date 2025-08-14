@@ -1,153 +1,127 @@
-Changes for QuantLib 1.34:
+Changes for QuantLib 1.39:
 ==========================
 
-QuantLib 1.34 includes 35 pull requests from several contributors.
+QuantLib 1.39 includes 28 pull requests from several contributors.
 
 Some of the most notable changes are included below.
 A detailed list of changes is available in ChangeLog.txt and at
-<https://github.com/lballabio/QuantLib/milestone/32?closed=1>.
+<https://github.com/lballabio/QuantLib/milestone/37?closed=1>.
 
 
 Portability
 -----------
 
-- **Future end of support:** as announced in release 1.32, we're
-  targeting next release (1.35) as the last to support Visual C++
-  2015, g++ up to version 6.x, and clang up to version 4; support for
-  those compilers will be dropped in release 1.36, about six months
-  from now.  From that point onwards, this will allows us to enable
-  the use of C++17 in the code base.
-  Also, given the testing environments available on GitHub actions,
-  clang 5 is already no longer available to us for testing, and in a
-  while the same will hold for clang 6 and g++ 7.  Therefore, it is
-  suggested to upgrade to a newer version if possible.
+- **Bug in recent Visual C++ versions**: a few recent version of the
+  Visual C++ 2022 compiler (from 17.14.2 to 17.14.8) had a known bug
+  that, unfortunately, affected QuantLib heavily and maed it basically
+  unusable.  A fix was released in version 17.14.9; if you’re
+  compiling QuantLib on Windows, make sure you're using at least that
+  version (or, if you can't upgrade, use the Visual C++ 2019 toolset;
+  you can do that from VC++ 2022, as well).
 
-- **Future end of support:** at the same time as the above, we'll also
-  remove the configure switch that allows to use `boost::tuple`,
-  `boost::function` and `boost::bind` instead of their `std`
-  counterparts; the `std` classes are already the default since
-  release 1.32.
-
-- Generate and install pkg-config files in CMake builds; thanks to
-  GitHub user @jez6.
+- **Change of default:** as already announced, in this release we're
+  switching the default for `ext::any` and `ext::optional` from the
+  Boost implementation to the standard one.  Using `boost::any` and
+  `boost::optional` is still possible for the time being but
+  deprecated.
 
 
-Dates and calendars
--------------------
+Dates, calendars and day-count conventions
+------------------------------------------
 
-- Prevent `Calendar::advance` from returning the business end of month
-  (instead of the calendar end) when `endOfMonth` is `true` and
-  `convention` is `Unadjusted`; thanks to GitHub user @DeimosXing.
+- Fixed a corner case of `Calendar::advance` when using EOM and the
+  unadjusted business-day convention; thanks to Eugene Toder (@eltoder).
+  
+- Fixed an error when asking for the serial number of a null date with
+  intraday support enabled (@lballabio); thanks to @UnitedMarsupial
+  for the heads-up.
 
-- Add good Friday holiday for SOFR fixing; thanks to GitHub user
-  @PaulXiCao.
+- Added the SHIR fixing calendar (@lballabio).
 
-- Properly restrict São Paulo city holiday to years before 2022;
-  thanks to Marco Bruno Ferreira Vasconcellos (@marcobfv).
-
-- Update holidays for 2023 and 2024 in calendars for India, Thailand,
-  Singapore and South Africa; thanks to Fredrik Gerdin Börjesson
-  (@gbfredrik).
+- Fixed the order of operations in the 30/360 USA day-count
+  convention; thanks to Eugene Toder (@eltoder).
 
 
-Cash flows
+Indexes
+-------
+
+- Added the SARON index; thanks to Paolo D'Elia (@paolodelia99).
+
+- Added a `CustomIborIndex` class that allows to create an IBOR-like
+  index with custom calendars for value and maturity dates
+  calculations; thanks to Eugene Toder (@eltoder).
+
+
+Instruments and pricing engines
+-------------------------------
+
+- The `MakeOIS` class now knows the default number of settlement days
+  for a few currencies; thanks to Zak Kraehling (@7astro7).
+
+
+Interest rates
+--------------
+
+- The `FxSwapRateHelper` class can now be built specifying fixed dates
+  instead of a tenor; thanks to Eugene Toder (@eltoder).
+
+- A number of helpers can now take quoted rates either as numbers or
+  `Handle<Quote>` via the use of `std::variant`; this reduces the
+  number of overloaded constructors and in some cases allows the use
+  of keyword arguments when exported to Python.  Thanks to Paolo
+  D'Elia (@paolodelia99) and Eugene Toder (@eltoder).
+
+- The `OISRateHelper` class can now specify a calendar for the
+  overnight leg; thanks to Eugene Toder (@eltoder).
+  
+- The `ZeroCouponInflationSwapHelper` class now doesn't need to be
+  passed a nominal curve, which wouldn't affect the results anyway
+  (@lballabio).
+
+
+Volatility
 ----------
 
-- Fixed a couple of cases in which notifications were not forwarded
-  properly; thanks to GitHub user @djkrystul for the heads-up.
-
-- Fixed past payment dates and added support for OIS in
-  `LinearTsrPricer`; thanks to Peter Caspers (@pcaspers).
-
-
-Instruments
------------
-
-- Swaptions can now take an OIS as underlying; thanks to Guillaume
-  Horel (@thrasibule) and Peter Caspers (@pcaspers).  So far, only
-  `BlackSwaptionEngine` manages OIS explicitly; other engines might
-  work and return approximated values.
-
-- More methods in `MakeOIS` and `MakeVanillaSwap`; thanks to Eugene Toder
-  (@eltoder).
-
-- More methods in the `BondFunctions` class now support either clean or
-  dirty prices; thanks to Francois Botha (@igitur).
-
-- The `basisPointValue` and `yieldValueBasisPoint` methods in
-  `BondFunctions` didn't always manage the settlement date correctly;
-  this is now fixed (thanks to GitHub user @jez6).
-
-- Add `Custom` to `Futures::Type` enumeration to allow passing custom
-  dates to futures; thanks to Eugene Toder (@eltoder).
-
-
-Term structures
----------------
-
-- Inflation curves can now be built passing an explicit base date
-  (corresponding to the last published fixing) instead of an
-  observation lag (@lballabio).
-
-- Fixed calculation of year fraction under Actual/365 Canadian
-  convention in `FuturesRateHelper`; thanks to GitHub user @PaulXiCao.
-
-- Fixed settlement date calculation in cross-currency basis-swap rate
-  helpers in some cases; thanks to Marcin Rybacki (@marcin-rybacki)
-  for the fix and to Aleksis Ali Raza for the heads-up.
-
-
-Math
-----
-
-- Handle non-equidistant grids and arbitrary dimensions in Laplace
-  interpolation; thanks to Peter Caspers (@pcaspers).
+- Optionlet stripperes can now use overnight indexes; thanks to Paolo
+  D'Elia (@paolodelia99).
+  
+- Added calculation of better guesses for SABR calibration as detailed
+  in the Le Floc'h and Kennedy paper (@lballabio).
 
 
 Deprecated features
 -------------------
 
-- **Removed** features deprecated in version 1.29:
-  - The `argument_type`, `first_argument_type`, `second_argument_type`
-    and `result_type` typedefs in several classes;
-  - The overloads of zero-rate inflation index constructors taking an
-    `interpolated` argument;
-  - The `interpolated` method and the protected `interpolated_` data
-    member in `InflationIndex`;
-  - The overload of `CashFlows::npvbps` taking the result by reference;
-  - The protected `rateCurve_` method in `InflationCouponPricer`;
-  - The `ThreadKey` typedef;
-  - The empty header `ql/experimental/credit/riskybond.hpp`.
+- **Removed** features deprecated in version 1.34:
+  - the overloads of `Bond::yield`, `BondFunctions::atmRate`,
+    `BondFunctions::yield` and `BondFunctions::zSpread` taking a price
+    as a `Real` instead of a `Bond::Price` instance;
+  - the `Swaption::underlyingSwap` and
+    `SwaptionHelper::underlyingSwap` methods;
+  - the constructors of `InflationTermStructure`,
+    `ZeroInflationTermStructure`, `YoYInflationTermStructure`,
+    `InterpolatedZeroInflationCurve`, `InterpolatedYoYInflationCurve`,
+    `PiecewiseZeroInflationCurve` and `PiecewiseYoYInflationCurve`
+    taking an observation lag;
+  - the overload of `InflationTermStructure::setSeasonality` taking no arguments;
+  - the `InflationTermStructure::setBaseRate` method;
+  - the `fixedRateBond` method and `fixedRateBond_` data member of the
+    `FixedRateBondHelper` class, and the `cpiBond` method and
+    `cpiBond_` data member of the `CPIBondHelper` class.
 
-- Deprecated the constructors of `InflationTermStructure`,
-  `ZeroInflationTermStructure`, `YoYInflationTermStructure`,
-  `InterpolatedZeroInflationCurve`, `InterpolatedYoYInflationCurve`,
-  `PiecewiseZeroInflationCurve` and `PiecewiseYoYInflationCurve`
-  taking an observation lag; use the overloads taking an explicit base
-  date instead.
+- Deprecated the `observationLag` and `hasExplicitBaseDate` methods
+  and the `observationLag_` data member of the
+  `InflationTermStructure` class; inflation term structures always
+  have an explicit base date now.
 
-- Deprecated the `Bond::yield`, `BondFunctions::atmRate`,
-  `BondFunctions::yield` and `BondFunctions::zSpread` overloads taking
-  a clean price as a number; use the overloads taking a `Bond::Price`
-  instead.
+- Deprecated the usage of `boost::any` and `boost::optional`; their
+  standard counterparts are used by default now.
 
-- Deprecated the `InflationTermStructure::setSeasonality` overload
-  taking no arguments; use the overload taking a pointer and pass an
-  empty one to remove seasonality.
-
-- Deprecated the `InflationTermStructure::setBaseRate` method; set
-  `baseRate_` directly if needed.
-
-- Deprecated the `Swaption::underlyingSwap` and
-  `SwaptionHelper::underlyingSwap` methods; use `underlying` instead.
-
-- Deprecated the broken `FixedRateBondHelper::fixedRateBond` and
-  `CPIBondHelper::cpiBond` methods and the corresponding
-  `fixedRateBond_` and `cpiBond_` data members.
+- Deprecated the constructor of `ZeroCouponInflationSwapHelper` taking
+  a nominal curve; use the other constructor instead.
 
 
-**Thanks go also** to Isuru Fernando (@isuruf), Viktor Zhou
-(@yyuuhhjjnnmm), Stephen Dacek (@sdacek), Yi Jiang (@yjian012),
-Jonathan Sweemer (@sweemer), Eugene Toder (@eltoder), the XAD team
-(@auto-differentiation-dev) and GitHub user @PaulXiCao and @klin333
-for miscellaneous fixes, improvements or reports.
+**Thanks go also** to Imrane Amri (@raneamri), Ralf Konrad Eckel
+(@ralfkonrad), Joan Carlos Naftanaila (@MiDDiz), Eugene Toder
+(@eltoder), Paolo D'Elia (@paolodelia99) and Holger Rother (@hrother)
+for miscellaneous smaller fixes, improvements or reports.

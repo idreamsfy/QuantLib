@@ -30,6 +30,7 @@
 #include <ql/math/solvers1d/brent.hpp>
 #include <ql/pricingengines/bond/bondfunctions.hpp>
 #include <ql/pricingengines/bond/discountingbondengine.hpp>
+#include <ql/shared_ptr.hpp>
 #include <utility>
 
 namespace QuantLib {
@@ -148,7 +149,7 @@ namespace QuantLib {
     }
 
     Date Bond::maturityDate() const {
-        if (maturityDate_!=Null<Date>())
+        if (maturityDate_ != Date())
             return maturityDate_;
         else
             return BondFunctions::maturityDate(*this);
@@ -235,18 +236,6 @@ namespace QuantLib {
             + accruedAmount(settlement);
     }
 
-    Rate Bond::yield(Real price,
-                     const DayCounter& dc,
-                     Compounding comp,
-                     Frequency freq,
-                     Date settlement,
-                     Real accuracy,
-                     Size maxEvaluations,
-                     Real guess,
-                     Bond::Price::Type priceType) const {
-        return yield({price, priceType}, dc, comp, freq, settlement, accuracy,
-                     maxEvaluations, guess);
-    }
     Rate Bond::yield(Bond::Price price,
                      const DayCounter& dc,
                      Compounding comp,
@@ -326,10 +315,10 @@ namespace QuantLib {
             Real amount = (R/100.0)*(notionals_[i-1]-notionals_[i]);
             ext::shared_ptr<CashFlow> payment;
             if (i < notionalSchedule_.size()-1)
-                payment.reset(new AmortizingPayment(amount,
-                                                    notionalSchedule_[i]));
+                payment = ext::make_shared<AmortizingPayment>(amount,
+                                                    notionalSchedule_[i]);
             else
-                payment.reset(new Redemption(amount, notionalSchedule_[i]));
+                payment = ext::make_shared<Redemption>(amount, notionalSchedule_[i]);
             cashflows_.push_back(payment);
             redemptions_.push_back(payment);
         }

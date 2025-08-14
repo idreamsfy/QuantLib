@@ -40,7 +40,8 @@ namespace QuantLib {
                         optionletStripper1->iborIndex(),
                         Handle<YieldTermStructure>(),
                         optionletStripper1->volatilityType(),
-                        optionletStripper1->displacement()),
+                        optionletStripper1->displacement(),
+                        optionletStripper1->optionletFrequency()),
       stripper1_(optionletStripper1), atmCapFloorTermVolCurve_(atmCapFloorTermVolCurve),
       dc_(stripper1_->termVolSurface()->dayCounter()),
       nOptionExpiries_(atmCapFloorTermVolCurve->optionTenors().size()),
@@ -102,7 +103,7 @@ namespace QuantLib {
                     adjustedVol = unadjustedVol + spreadsVolImplied_[j];
 
                     // insert adjusted volatility
-                    std::vector<Rate>::const_iterator previous =
+                    auto previous =
                         std::lower_bound(optionletStrikes_[i].begin(),
                                          optionletStrikes_[i].end(),
                                          atmCapFloorStrikes_[j]);
