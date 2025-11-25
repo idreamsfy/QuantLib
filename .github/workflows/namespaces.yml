@@ -1,13 +1,13 @@
 name: Fix deprecated uses of ext namespace
 on:
   push:
-    branches:
-      - '**'
+    branches-ignore:
+      - 'dependabot/**'
 jobs:
-  namespaces:
+  check-namespaces:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Check
       run: |
         shopt -s globstar

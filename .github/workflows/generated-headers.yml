@@ -1,13 +1,13 @@
 name: Update generated headers
 on:
   push:
-    branches:
-      - '**'
+    branches-ignore:
+      - 'dependabot/**'
 jobs:
-  filelists:
+  generate-headers:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Setup
       run: |
         sudo rm /etc/apt/sources.list.d/microsoft-prod.list
